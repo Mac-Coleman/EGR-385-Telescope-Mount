@@ -16,21 +16,23 @@ class DMS:
     def __init__(self, angle):
         signed_angle = (angle + 180) % 360 - 180
         self.deg = round(signed_angle)
-        m = (signed_angle - self.deg) * 60
+        m = (signed_angle % 1) * 60 # This feels sketchy
         self.min = round(m)
-        s = (m - self.min) * 60
+        s = ((m * 100) % 1) * 60 # This feels even sketchier
         self.sec = s
 
     def __format__(self, spec):
-        return "{}{}{:02}'{:03.03}\"".format(str(self.deg).rjust(4), chr(223), self.min, self.sec)
+        return "{}{} {:02}' {:04.1f}\"".format(str(self.deg).rjust(4), chr(223), self.min, self.sec)
 
 while True:
     angle = encoder.read_angle_degrees()
     signed_angle = angle - last_angle
     signed_angle = (signed_angle + 180) % 360 - 180
     diff = signed_angle/10
-    if abs(diff) >= 0.5:
+    if abs(diff) >= 0.05:
         last_angle = angle
+    else:
+        diff = 0.0
     selection = (selection + diff)
     # lcd.lcd_clear()
     lcd.lcd_display_string("Enter coordinates", 1)

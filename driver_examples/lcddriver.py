@@ -117,8 +117,10 @@ class lcd:
       if self.cached[line-1] == string:
          return
 
-      for char in string:
-         self.lcd_write(ord(char), Rs)
+      [self.lcd_write(ord(char), Rs) for char in string]
+
+      # for char in string:
+      #   self.lcd_write(ord(char), Rs)
 
       self.cached[line-1] = string
 
