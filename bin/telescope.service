@@ -1,0 +1,13 @@
+[Unit]
+Description=Telescope
+
+[Service]
+SyslogIdentifier=telescope
+User=telescope
+Type=simple
+ExecStart=/home/telescope/EGR-385-Telescope-Mount/bin/start.sh
+ExecStop=/home/telescope/EGR-385-Telescope-Mount/bin/stop.sh
+Restart=no
+
+[Install]
+WantedBy=multi-user.target
