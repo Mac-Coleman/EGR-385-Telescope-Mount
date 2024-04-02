@@ -6,7 +6,7 @@
 import sys
 sys.path.append("./lib")
 
-import i2c_lib
+import telescope.lib.i2c_lib
 from time import *
 
 # LCD Address
