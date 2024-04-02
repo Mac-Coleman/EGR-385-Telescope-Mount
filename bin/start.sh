@@ -8,9 +8,9 @@ function checkInternet {
 }
 
 # If we don't have internet, that is okay, just don't try to pull anything.
-if checkInternet; do
+if checkInternet; then
   git pull
-done
+fi
 
 sudo python3 -m telescope
 
