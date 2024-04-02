@@ -17,5 +17,5 @@ for i in range(100):
     
     lcd.lcd_clear()
     lcd.lcd_display_string(str(i), 1)
-    lcd.lcd_display_string([chr(i)], 2)
+    lcd.lcd_display_string(chr(i), 2)
     sleep(1)

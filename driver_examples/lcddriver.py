@@ -11,6 +11,7 @@ from time import *
 
 # LCD Address
 ADDRESS = 0x27
+I2C_BUS = 4
 
 # commands
 LCD_CLEARDISPLAY = 0x01
@@ -61,7 +62,7 @@ Rs = 0b00000001 # Register select bit
 class lcd:
    #initializes objects and lcd
    def __init__(self):
-      self.lcd_device = i2c_lib.i2c_device(ADDRESS)
+      self.lcd_device = i2c_lib.i2c_device(ADDRESS, I2C_BUS)
 
       self.lcd_write(0x03)
       self.lcd_write(0x03)
@@ -112,7 +113,7 @@ class lcd:
       if line == 4:
          self.lcd_write(0xD4)
 
-      string = "{:<20}".format(string)
+      string = string.ljust(20)
 
       if self.cached[line-1] == string:
          return
