@@ -1,3 +1,6 @@
+#Overall stuff
+DEBUG_TIMEOUT = 15
+
 
 #GPS Stuff
 GPS_UART = "/dev/ttyAMA0"

@@ -1,4 +1,5 @@
 from telescope.lib.lcddriver import lcd
+from telescope.consts import DEBUG_TIMEOUT
 
 import time
 import board
@@ -17,9 +18,9 @@ def main():
     display.lcd_clear()
 
     display.lcd_display_string("Loading...".center(20), 1)
-    display.lcd_display_string("Press SELECT to start".center(20), 2)
+    display.lcd_display_string("SELECT to start".center(20), 2)
     display.lcd_display_string("OR".center(20), 3)
-    display.lcd_display_string("wait 5s to debug".center(20), 4)
+    display.lcd_display_string(f"wait {DEBUG_TIMEOUT}s to debug".center(20), 4)
 
     wheel_product = (wheel.get_version() >> 16) & 0xFFFF
     print("Found product: ", wheel_product)
@@ -30,16 +31,23 @@ def main():
     wheel.pin_mode(1, wheel.INPUT_PULLUP)
     select = digitalio.DigitalIO(wheel, 1)
 
-    while time.time() > (start_time + 5):
-        display.lcd_display_string(f"wait {int((start_time+5) - time.time())}s to debug", 4)
+    while time.time() < (start_time + DEBUG_TIMEOUT):
+        display.lcd_display_string(f"wait {int((start_time+DEBUG_TIMEOUT) - time.time())}s to debug".center(20), 4)
+        time.sleep(0.1)
         if not select.value:
             start = True
             break
 
     if start:
+        display.lcd_clear()
+        display.lcd_display_string("Starting...".center(20), 1)
         run_telescope()
     else:
         print("Telescope escaped")
+        display.lcd_clear()
+        display.lcd_display_string("CANCELLED".center(20), 1)
+        display.lcd_display_string("Telescope did not".center(20), 3)
+        display.lcd_display_string("start".center(20), 4)
 
 
 
