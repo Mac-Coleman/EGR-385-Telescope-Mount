@@ -9,7 +9,16 @@ setup(
     author_email="williamcormaccoleman@gmail.com",
     license="none",
     packages=["telescope"],
-    install_requires=["RPi.GPIO", "adafruit-circuitpython-gps", "smbus2", "skyfield", "rpi-hardware-pwm"],
+    install_requires=[
+        "RPi.GPIO",
+        "adafruit-circuitpython-gps",
+        "adafruit-circuitpython-mmc56x3",
+        "adafruit-circuitpython-adxl34x",
+        "adafruit-circuitpython-seesaw",
+        "smbus2",
+        "skyfield",
+        "rpi-hardware-pwm"
+    ],
     classifiers=[
         "Development Status :: 1 - Planning",
         "Operating System :: POSIX :: Linux",
