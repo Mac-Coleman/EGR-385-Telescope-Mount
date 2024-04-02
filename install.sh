@@ -1,3 +1,4 @@
+#!/bin/bash
 sudo apt update
 sudo apt install -y python3-pip git
 git clone https://github.com/Mac-Coleman/EGR-385-Telescope-Mount.git
