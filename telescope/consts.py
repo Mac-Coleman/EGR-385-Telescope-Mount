@@ -7,7 +7,7 @@ MAGNETIC_NORTH_2024 = (86.0, 142.0)  # Lat, Long
 # https://wdc.kugi.kyoto-u.ac.jp/poles/polesexp.html
 
 # Accelerometer Stuff
-ACCELEROMETER_DOWN = (0, 0, 1)
+ACCELEROMETER_FORWARD = (1, 0, 0)
 
 # Magnetometer STUFF
 MAGNETOMETER_FORWARD = (0, 1, 0)
