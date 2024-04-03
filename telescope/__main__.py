@@ -1,5 +1,7 @@
 from telescope.lib.lcddriver import lcd
 from telescope.consts import DEBUG_TIMEOUT
+from telescope.interface import Interface
+from telescope.mount import Mount
 
 import time
 import board
@@ -41,6 +43,10 @@ def main():
     if start:
         display.lcd_clear()
         display.lcd_display_string("Starting...".center(20), 1)
+        # Clean these up for now
+        del display
+        del wheel
+        del i2c
         run_telescope()
     else:
         print("Telescope escaped")
@@ -50,9 +56,17 @@ def main():
         display.lcd_display_string("start".center(20), 4)
 
 
-
 def run_telescope():
     print("running telescope")
+    i2c = board.I2C()
+    interface = Interface(i2c)
+    mount = Mount(i2c)
+
+    while True:
+        interface.update()
+        mount.update()
+        time.sleep(0.1)
+
 
 
 if __name__ == "__main__":
