@@ -17,7 +17,8 @@ setup(
         "adafruit-circuitpython-seesaw",
         "smbus2",
         "skyfield",
-        "rpi-hardware-pwm"
+        "rpi-hardware-pwm",
+        "keyboard"
     ],
     classifiers=[
         "Development Status :: 1 - Planning",
