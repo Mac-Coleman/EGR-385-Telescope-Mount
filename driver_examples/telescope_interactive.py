@@ -32,7 +32,7 @@ def main(az_pwm, al_pwm):
             al_pwm.start(50)
             print("Al:", al_direction)
         else:
-            az_pwm.stop()
+            al_pwm.stop()
         sleep(0.01)
 
 
