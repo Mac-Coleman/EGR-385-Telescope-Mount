@@ -2,6 +2,7 @@ import math
 from telescope.consts import MAGNETOMETER_FORWARD, ACCELEROMETER_FORWARD
 
 Vector3 = tuple[float, float, float]
+Vector2 = tuple[float, float]
 
 
 def dot(a: Vector3, b: Vector3) -> float:
@@ -21,16 +22,26 @@ def mag(a: Vector3) -> float:
     return math.sqrt(a[0]**2 + a[1] ** 2 + a[2] ** 2)
 
 
-def signed_angle(a: Vector3, b: Vector3) -> float:
+def signed_angle3(a: Vector3, b: Vector3) -> float:
     # https://stackoverflow.com/questions/5188561/signed-angle-between-two-3d-vectors-with-same-origin-within-the-same-plane
     n = unit(cross(a, b))
     return math.atan2(dot(cross(a, b), n), dot(a, b)) * 180.0 / math.pi
 
 
+def signed_angle2(a: Vector2, b: Vector2) -> float:
+    ang1 = math.atan2(a[0], a[1])
+    ang2 = math.atan2(b[0], b[1])
+    return (ang2 - ang1) * 180.0 / math.pi
+
+
 def get_heading_from_magnetometer(magnetometer_reading: Vector3) -> float:
     # Return compass heading for now
-    return signed_angle(magnetometer_reading, MAGNETOMETER_FORWARD)
+    flattened_reading = (magnetometer_reading[0], magnetometer_reading[1])
+    flattened_reference = (MAGNETOMETER_FORWARD[0], MAGNETOMETER_FORWARD[1])
+    return signed_angle2(flattened_reference, flattened_reading)
 
 
 def get_altitude_from_accelerometer(accelerometer_reading) -> float:
-    return signed_angle(accelerometer_reading, ACCELEROMETER_FORWARD)
+    flattened_reading = (accelerometer_reading[0], accelerometer_reading[2])
+    flattened_reference = (ACCELEROMETER_FORWARD[0], ACCELEROMETER_FORWARD[2])
+    return signed_angle2(flattened_reference, flattened_reading)
