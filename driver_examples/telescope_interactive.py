@@ -6,43 +6,50 @@ import RPi.GPIO as GPIO
 from rpi_hardware_pwm import HardwarePWM
 
 speed = 0
-pulse_pin = 18
-dir_pin = 23
+az_pulse_pin = 18
+az_dir_pin = 23
+al_pulse_pin = 19
+al_dir_pin = 24
 
-def right_arrow(arg):
-    global speed
-    speed += 200
 
-def left_arrow(arg):
-    global speed
-    speed -= 200
-
-keyboard.on_press_key('left arrow', left_arrow)
-keyboard.on_press_key('right arrow', right_arrow)
-
-def main(pwm):
+def main(az_pwm, al_pwm):
     while True:
-        speed_hyst = speed
-        if abs(speed_hyst) < 0.5:
-            pwm.stop()
+        az_direction = 0 if keyboard.is_pressed("left arrow") else None
+        az_direction = 1 if keyboard.is_pressed("right arrow") else az_direction
+
+        al_direction = 0 if keyboard.is_pressed("up arrow") else None
+        al_direction = 1 if keyboard.is_pressed("down arrow") else al_direction
+
+        if az_direction is not None:
+            GPIO.output(az_dir_pin, az_direction)
+            az_pwm.start(50)
+            print("Az:", az_direction)
         else:
-            pwm.start(50)
-            GPIO.output(dir_pin, speed_hyst <= 0)
-            print(speed_hyst)
-            pwm.change_frequency(abs(speed_hyst))
+            az_pwm.stop()
+
+        if al_direction is not None:
+            GPIO.output(al_dir_pin, al_direction)
+            al_pwm.start(50)
+            print("Al:", al_direction)
+        else:
+            az_pwm.stop()
         sleep(0.01)
 
 
 try:
     GPIO.setmode(GPIO.BCM)
-    GPIO.setup(dir_pin, GPIO.OUT)
+    GPIO.setup(al_dir_pin, GPIO.OUT)
+    GPIO.setup(az_dir_pin, GPIO.OUT)
 
-    pwm = HardwarePWM(pwm_channel=0, hz=32, chip=0)
-    main(pwm)
+    az_pwm = HardwarePWM(pwm_channel=0, hz=200, chip=0)
+    al_pwm = HardwarePWM(pwm_channel=1, hz=200, chip=0)
+    main(az_pwm, al_pwm)
 except Exception as e:
     print(f"Halting due to {e}")
     print(traceback.format_exc())
 finally:
-    pwm = HardwarePWM(pwm_channel=0, hz=32, chip=0)
-    pwm.stop()
+    al_pwm = HardwarePWM(pwm_channel=0, hz=200, chip=0)
+    al_pwm.stop()
+    az_pwm = HardwarePWM(pwm_channel=0, hz=200, chip=0)
+    al_pwm.stop()
     GPIO.cleanup()
