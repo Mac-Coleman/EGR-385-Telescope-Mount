@@ -9,6 +9,7 @@ function checkInternet {
 
 # If we don't have internet, that is okay, just don't try to pull anything.
 if checkInternet; then
+  git fetch
   git pull
 fi
 
