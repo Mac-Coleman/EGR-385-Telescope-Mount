@@ -104,7 +104,7 @@ class Interface:
                 last_encoder = pos
 
             prompt = " " + "{}Yes".format(headers[int(selection)]).rjust(8) + " "
-            prompt += ("  " + "{}No".format(headers[int(not selection)]).rjust(6) + "  ") # Ough
+            prompt += ("  " + "{}No".format(headers[int(not selection)]).rjust(6) + "  ")  # Ough
             self.__lcd.lcd_display_string(prompt, 4)
 
             if self.select_pressed():
@@ -129,7 +129,7 @@ class Interface:
 
             if utc_time:
                 print(utc_time)
-                return utc_time
+                return datetime(*utc_time[:6])
 
             if self.select_pressed():
                 return False
