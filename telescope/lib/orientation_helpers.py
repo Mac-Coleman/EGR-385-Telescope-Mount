@@ -28,20 +28,17 @@ def signed_angle3(a: Vector3, b: Vector3) -> float:
     return math.atan2(dot(cross(a, b), n), dot(a, b)) * 180.0 / math.pi
 
 
-def signed_angle2(a: Vector2, b: Vector2) -> float:
-    ang1 = math.atan2(a[0], a[1])
-    ang2 = math.atan2(b[0], b[1])
-    return (ang2 - ang1) * 180.0 / math.pi
+def signed_angle2(a: Vector2) -> float:
+    ang = math.atan2(a[0], a[1])
+    return ang * 180.0 / math.pi
 
 
 def get_heading_from_magnetometer(magnetometer_reading: Vector3) -> float:
     # Return compass heading for now
     flattened_reading = (magnetometer_reading[0], magnetometer_reading[1])
-    flattened_reference = (MAGNETOMETER_FORWARD[0], MAGNETOMETER_FORWARD[1])
-    return signed_angle2(flattened_reference, flattened_reading)
+    return signed_angle2(flattened_reading)
 
 
 def get_altitude_from_accelerometer(accelerometer_reading) -> float:
     flattened_reading = (accelerometer_reading[0], accelerometer_reading[2])
-    flattened_reference = (ACCELEROMETER_FORWARD[0], ACCELEROMETER_FORWARD[2])
-    return signed_angle2(flattened_reference, flattened_reading)
+    return signed_angle2(flattened_reading)
