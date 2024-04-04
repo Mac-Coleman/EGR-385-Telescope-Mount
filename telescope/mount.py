@@ -1,8 +1,7 @@
 import adafruit_adxl34x
 import adafruit_mmc56x3
 import adafruit_gps
-import busio
-import board
+import serial
 
 from telescope.consts import AZ_PWM_CHANNEL, AZ_DIR_PIN, AL_PWM_CHANNEL, AL_DIR_PIN
 from telescope.lib.motor import StepperMotor
@@ -22,7 +21,7 @@ class Mount:
         self.__magnetometer.set_reset()
         self.__magnetometer.reset()
 
-        self.__uart = busio.UART(board.TX, board.RX)
+        self.__uart = serial.Serial("/dev/ttyS0", baudrate=9600, timeout=10)
         self.__gps = adafruit_gps.GPS(self.__uart, debug=False)
 
         # Turn on RMC/GGA messages.
