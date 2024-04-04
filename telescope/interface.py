@@ -13,7 +13,6 @@ class Interface:
         #   Rotary Encoder/Buttons
         self.__lcd = lcd()
         self.__wheel = seesaw.Seesaw(i2c_bus, addr=0x49)
-        self.__keypad = None # will be a Picaxe 20X2
 
         wheel_product = (self.__wheel.get_version() >> 16) & 0xFFFF
 
@@ -32,7 +31,7 @@ class Interface:
         self.__wheel_down = digitalio.DigitalIO(self.__wheel, 4)
         self.__wheel_right = digitalio.DigitalIO(self.__wheel, 1)
 
-        self.__wheel_encoder = rotaryio.IncrementalEncoder(seesaw)
+        self.__wheel_encoder = rotaryio.IncrementalEncoder(self.__wheel)
 
     def select_pressed(self):
         return not self.__wheel_select.value
