@@ -73,7 +73,7 @@ class Interface:
         s = textwrap.fill(question, 20).split("\n")[0:3]
 
         for lcd_line, line in enumerate(s):
-            self.__lcd.lcd_display_string(line.center(20), lcd_line)
+            self.__lcd.lcd_display_string(line.center(20), lcd_line+1)
 
         selection = False
         last_encoder = self.__wheel_encoder.position
@@ -87,7 +87,7 @@ class Interface:
                 last_encoder = pos
 
             prompt = " " + "{}Yes".format(headers[int(selection)]).rjust(8) + " "
-            prompt += (" " + "{}No".format(headers[int(not selection)]).rjust(8) + " ") # Ough
+            prompt += ("  " + "{}No".format(headers[int(not selection)]).rjust(6) + "  ") # Ough
             self.__lcd.lcd_display_string(prompt, 4)
 
             if self.select_pressed():
