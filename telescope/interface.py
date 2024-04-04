@@ -86,8 +86,8 @@ class Interface:
                 selection = not selection
                 last_encoder = pos
 
-            prompt = "{ }Yes   { }No".center(20)
-            prompt.format(headers[int(selection)], headers[int(not selection)])  # Ough
+            prompt = " " + "{}Yes".format(headers[int(selection)]).rjust(8) + " "
+            prompt += (" " + "{}No".format(headers[int(not selection)]).rjust(8) + " ") # Ough
             self.__lcd.lcd_display_string(prompt, 4)
 
             if self.select_pressed():
