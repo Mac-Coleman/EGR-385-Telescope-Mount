@@ -8,10 +8,10 @@ from rpi_hardware_pwm import HardwarePWM
 az_speed = 4800
 al_speed = 2000
 
-az_pulse_pin = 18
-az_dir_pin = 23
-al_pulse_pin = 19
-al_dir_pin = 24
+az_pulse_pin = 19
+az_dir_pin = 24
+al_pulse_pin = 18
+al_dir_pin = 23
 
 
 def main(az_pwm, al_pwm):
@@ -43,8 +43,8 @@ try:
     GPIO.setup(al_dir_pin, GPIO.OUT)
     GPIO.setup(az_dir_pin, GPIO.OUT)
 
-    az_pwm = HardwarePWM(pwm_channel=0, hz=az_speed, chip=0)
-    al_pwm = HardwarePWM(pwm_channel=1, hz=al_speed, chip=0)
+    al_pwm = HardwarePWM(pwm_channel=0, hz=al_speed, chip=0)
+    az_pwm = HardwarePWM(pwm_channel=1, hz=az_speed, chip=0)
     main(az_pwm, al_pwm)
 except Exception as e:
     print(f"Halting due to {e}")
@@ -52,6 +52,6 @@ except Exception as e:
 finally:
     al_pwm = HardwarePWM(pwm_channel=0, hz=200, chip=0)
     al_pwm.stop()
-    az_pwm = HardwarePWM(pwm_channel=0, hz=200, chip=0)
-    al_pwm.stop()
+    az_pwm = HardwarePWM(pwm_channel=1, hz=200, chip=0)
+    az_pwm.stop()
     GPIO.cleanup()
