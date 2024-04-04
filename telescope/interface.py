@@ -4,6 +4,7 @@ import time
 import textwrap
 import sys
 from adafruit_seesaw import seesaw, digitalio, rotaryio
+from datetime import datetime, timezone
 
 
 class Interface:
@@ -74,9 +75,12 @@ class Interface:
 
             time.sleep(5)
 
-        if self.get_gps_time() is False:
-            # Specify manually
-            pass
+        utc_time = self.get_gps_time()
+        if utc_time is False:
+            utc_time = datetime.fromtimestamp(self.int_selection("Time", 0, 0, 24))
+
+        while not self.yes_or_no(f"Time found: {utc_time.isoformat()[:-6]} Use?"):
+            utc_time = datetime.fromtimestamp(self.int_selection("Time", 0, 0, 24))
 
     def yes_or_no(self, question: str):
         self.__lcd.lcd_clear()
@@ -113,13 +117,16 @@ class Interface:
         start_time = time.time()
         while True:
             self.__lcd.lcd_display_string("Sats visible: {}".format(0).center(20), 2)
-            self.__lcd.lcd_display_string("  T: {}s".format(time.time() - start_time), 3)
+            self.__lcd.lcd_display_string("  T: {}s".format(int(time.time() - start_time)), 3)
             self.__lcd.lcd_display_string("SELECT to specify...".center(20), 4)
 
             if self.select_pressed():
                 return False
 
             time.sleep(0.1)
+
+        # Unreachable
+        return datetime.now(timezone.utc)
 
     def lcd_three_line_message(self, message: str):
         self.__lcd.lcd_clear()
@@ -136,6 +143,47 @@ class Interface:
             self.__lcd.lcd_display_string(line.center(20), lcd_line+1)
 
         sys.exit(1)
+
+
+    def specify_utc_time(self):
+        utc_default = datetime.now(timezone.utc) # Based on rpi clock
+
+        default = [
+            ("Year", utc_default.year),
+            ("Month", utc_default.month),
+            ("Day", utc_default.day),
+            ("Hour", utc_default.hour),
+            ("Minute", utc_default.second)
+        ]
+
+    def list_selection(self):
+        pass
+
+
+    def int_selection(self, title, start, min, max):
+        # Use wheel to adjust number
+        self.__lcd.lcd_clear()
+
+        last_encoder = self.__wheel_encoder.position
+
+        selection = start
+
+        while True:
+            pos = self.__wheel_encoder.position
+            if pos != last_encoder:
+                selection += pos - last_encoder
+                last_encoder = pos
+                selection %= max - min
+                selection += min
+
+            self.__lcd.lcd_display_string(title.center(20), 1)
+            self.__lcd.lcd_display_string(f"> {selection}", 3)
+            self.__lcd.lcd_display_string("SELECT to choose".center(20), 4)
+
+            if self.select_pressed():
+                return selection
+
+            time.sleep(0.1)
 
 
     def update(self):
