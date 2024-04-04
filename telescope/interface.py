@@ -4,6 +4,7 @@ from telescope.mount import Mount
 import time
 import textwrap
 import sys
+from typing import Optional, Tuple
 from adafruit_seesaw import seesaw, digitalio, rotaryio
 from datetime import datetime, timezone
 
@@ -79,11 +80,22 @@ class Interface:
             time.sleep(5)
 
         utc_time = self.get_gps_time()
-        if utc_time is False:
+        if utc_time is None:
             utc_time = datetime.fromtimestamp(self.int_selection("Time", 0, 0, 24))
 
         while not self.yes_or_no(f"Time found: {utc_time.isoformat()[:-6]} Use?"):
             utc_time = datetime.fromtimestamp(self.int_selection("Time", 0, 0, 24))
+
+        gps_coords = self.get_gps_coords()
+        if gps_coords is None:
+            gps_coords = (0.0, 0.0, 0.0)
+
+        question = f"Use {gps_coords[0]:.2f} {'N' if gps_coords[0] >= 0.0 else 'S'}, " \
+                f"{gps_coords[1]:.2f} {'E' if gps_coords[1] >= 0.0 else 'W'}, " \
+                f"{gps_coords[2]}m?"
+
+        while not self.yes_or_no(question):
+            gps_coords = (self.int_selection("Choose coord", 0, -90, 90), 0.0, 0.0)
 
     def yes_or_no(self, question: str):
         self.__lcd.lcd_clear()
@@ -113,7 +125,7 @@ class Interface:
 
         return selection
 
-    def get_gps_time(self):
+    def get_gps_time(self) -> Optional[datetime]:
         self.__lcd.lcd_clear()
         self.__lcd.lcd_display_string("Getting UTC Time...".center(20), 1)
 
@@ -121,7 +133,7 @@ class Interface:
 
         start_time = time.time()
         while True:
-            sats, utc_time = self.__mount.poll_gps()[1:3]
+            sats, utc_time = self.__mount.poll_gps()[2:4]
 
             self.__lcd.lcd_display_string("Sats visible: {}".format(sats).center(20), 2)
             self.__lcd.lcd_display_string("  T: {}s".format(int(time.time() - start_time)), 3)
@@ -132,7 +144,27 @@ class Interface:
                 return datetime(*utc_time[:6])
 
             if self.select_pressed():
-                return False
+                return None
+
+            time.sleep(0.1)
+
+    def get_gps_coords(self) -> Optional[Tuple[float, float, float]]:
+        self.__lcd.lcd_clear()
+        self.__lcd.lcd_display_string("Getting coordinates", 1)
+
+        start_time = time.time()
+        while True:
+            fix, fix_3d, sats, utc_time, lat, latd, latm, long, longd, longm, height = self.__mount.poll_gps()
+
+            self.__lcd.lcd_display_string("Sats: {} Fix: {}".format(sats, fix_3d).center(20), 2)
+            self.__lcd.lcd_display_string("  T: {}s".format(int(time.time() - start_time)), 3)
+            self.__lcd.lcd_display_string("SELECT to specify...".center(20), 4)
+
+            if fix_3d is not None and lat is not None and long is not None and height is not None:
+                return lat, long, height
+
+            if self.select_pressed():
+                return None
 
             time.sleep(0.1)
 

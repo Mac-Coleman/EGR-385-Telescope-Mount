@@ -39,12 +39,16 @@ class Mount:
         self.__gps.update()
         return (
             self.__gps.has_fix,
+            self.__gps.has_3d_fix,
             self.__gps.satellites,
             self.__gps.timestamp_utc,
+            self.__gps.latitude,
             self.__gps.latitude_degrees,
             self.__gps.latitude_minutes,
+            self.__gps.longitude,
             self.__gps.longitude_degrees,
-            self.__gps.longitude_minutes
+            self.__gps.longitude_minutes,
+            self.__gps.height_geoid
         )
 
     def update(self):
