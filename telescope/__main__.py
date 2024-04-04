@@ -60,11 +60,11 @@ def run_telescope():
     print("running telescope")
     i2c = board.I2C()
     interface = Interface(i2c)
-    mount = Mount(i2c)
+    # Perform setup routine for user interface.
+    interface.setup()
 
     while True:
         interface.update()
-        mount.update()
         time.sleep(0.1)
 
 
