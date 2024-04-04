@@ -156,11 +156,11 @@ class Interface:
         while True:
             fix, fix_3d, sats, utc_time, lat, latd, latm, long, longd, longm, height = self.__mount.poll_gps()
 
-            self.__lcd.lcd_display_string("Sats: {} Fix: {}".format(sats, fix_3d).center(20), 2)
+            self.__lcd.lcd_display_string("Sats: {} Fix: {}".format(sats, "Yes" if fix_3d else "No").center(20), 2)
             self.__lcd.lcd_display_string("  T: {}s".format(int(time.time() - start_time)), 3)
             self.__lcd.lcd_display_string("SELECT to specify...".center(20), 4)
 
-            if fix_3d is not None and lat is not None and long is not None and height is not None:
+            if fix_3d and lat is not None and long is not None and height is not None:
                 return lat, long, height
 
             if self.select_pressed():
