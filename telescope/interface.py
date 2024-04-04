@@ -2,6 +2,7 @@ from telescope.lib.lcddriver import lcd
 
 import time
 import textwrap
+import sys
 from adafruit_seesaw import seesaw, digitalio, rotaryio
 
 
@@ -57,9 +58,14 @@ class Interface:
 
         time.sleep(5)
 
-        calibrate = self.yes_or_no("Calibration found. Use calib data?")
+        leveled = self.yes_or_no("Is the telescope level?")
 
-        if calibrate:
+        if not leveled:
+            self.error("Error: Control Failure. Debug required.")
+
+        skip_calibrate = self.yes_or_no("Calibration found. Use calib data?")
+
+        if not skip_calibrate:
 
             self.__lcd.lcd_clear()
             self.__lcd.lcd_display_string("Calibrating".center(20), 1)
@@ -67,6 +73,10 @@ class Interface:
             self.__lcd.lcd_display_string("Please wait".center(20), 4)
 
             time.sleep(5)
+
+        if self.get_gps_time() is False:
+            # Specify manually
+            pass
 
     def yes_or_no(self, question: str):
         self.__lcd.lcd_clear()
@@ -95,6 +105,38 @@ class Interface:
             time.sleep(0.1)
 
         return selection
+
+    def get_gps_time(self):
+        self.__lcd.lcd_clear()
+        self.__lcd.lcd_display_string("Getting UTC Time...".center(20), 1)
+
+        start_time = time.time()
+        while True:
+            self.__lcd.lcd_display_string("Sats visible: {}".format(0).center(20), 2)
+            self.__lcd.lcd_display_string("  T: {}s".format(time.time() - start_time), 3)
+            self.__lcd.lcd_display_string("SELECT to specify...".center(20), 4)
+
+            if self.select_pressed():
+                return False
+
+            time.sleep(0.1)
+
+    def lcd_three_line_message(self, message: str):
+        self.__lcd.lcd_clear()
+        s = textwrap.fill(message, 20).split("\n")[0:3]
+
+        for lcd_line, line in enumerate(s):
+            self.__lcd.lcd_display_string(line.center(20), lcd_line + 1)
+
+    def error(self, message: str):
+        self.__lcd.lcd_clear()
+        s = textwrap.fill(message, 20).split("\n")[0:4]
+
+        for lcd_line, line in enumerate(s):
+            self.__lcd.lcd_display_string(line.center(20), lcd_line+1)
+
+        sys.exit(1)
+
 
     def update(self):
         pass
