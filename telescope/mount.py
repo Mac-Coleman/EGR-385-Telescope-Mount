@@ -3,7 +3,7 @@ import adafruit_mmc56x3
 import adafruit_gps
 import serial
 
-from telescope.consts import AZ_PWM_CHANNEL, AZ_DIR_PIN, AL_PWM_CHANNEL, AL_DIR_PIN
+import telescope.consts as consts
 from telescope.lib.motor import StepperMotor
 from telescope.lib.orientation_helpers import get_altitude_from_accelerometer, get_heading_from_magnetometer
 
@@ -30,8 +30,8 @@ class Mount:
         # One second update period
         self.__gps.send_command(b"PMTK220,1000")
 
-        self.__az_motor = StepperMotor(AZ_PWM_CHANNEL, AZ_DIR_PIN)
-        self.__al_motor = StepperMotor(AL_PWM_CHANNEL, AL_DIR_PIN)
+        self.__az_motor = StepperMotor(consts.AZ_PWM_CHANNEL, consts.AZ_DIR_PIN, consts.AZ_MAX_SPEED, consts.AZ_MAX_ACCELERATION)
+        self.__al_motor = StepperMotor(consts.AL_PWM_CHANNEL, consts.AL_DIR_PIN, consts.AL_MAX_SPEED, consts.AZ_MAX_ACCELERATION)
 
         self.__setpoint = (0.0, 0.0)  # Azimuth, Altitude Setpoint
 
