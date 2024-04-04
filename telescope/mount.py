@@ -22,7 +22,7 @@ class Mount:
         self.__magnetometer.set_reset()
         self.__magnetometer.reset()
 
-        self.__uart = busio.UART(board.UART_TX, board.UART_RX)
+        self.__uart = busio.UART(board.TX, board.RX)
         self.__gps = adafruit_gps.GPS(self.__uart, debug=False)
 
         # Turn on RMC/GGA messages.
