@@ -36,5 +36,5 @@ class Mount:
         a_reading = self.__accelerometer.acceleration
 
         print("New reading:")
-        print("H: ", get_heading_from_magnetometer(m_reading))
-        print("A: ", get_altitude_from_accelerometer(a_reading))
+        print("H: ", get_heading_from_magnetometer(m_reading), m_reading)
+        print("A: ", get_altitude_from_accelerometer(a_reading), a_reading)
