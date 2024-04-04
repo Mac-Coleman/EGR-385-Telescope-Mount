@@ -121,7 +121,7 @@ class Interface:
 
         start_time = time.time()
         while True:
-            sats, utc_time = self.__mount.poll_gps()[1:2]
+            sats, utc_time = self.__mount.poll_gps()[1:3]
 
             self.__lcd.lcd_display_string("Sats visible: {}".format(sats).center(20), 2)
             self.__lcd.lcd_display_string("  T: {}s".format(int(time.time() - start_time)), 3)
