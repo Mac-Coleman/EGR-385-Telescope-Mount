@@ -1,4 +1,5 @@
 from telescope.lib.lcddriver import lcd
+from telescope.mount import Mount
 
 import time
 import textwrap
@@ -34,6 +35,8 @@ class Interface:
         self.__wheel_right = digitalio.DigitalIO(self.__wheel, 1)
 
         self.__wheel_encoder = rotaryio.IncrementalEncoder(self.__wheel)
+
+        self.__mount = Mount(i2c_bus)
 
     def select_pressed(self):
         return not self.__wheel_select.value
@@ -114,19 +117,24 @@ class Interface:
         self.__lcd.lcd_clear()
         self.__lcd.lcd_display_string("Getting UTC Time...".center(20), 1)
 
+        utc_time = None
+
         start_time = time.time()
         while True:
             self.__lcd.lcd_display_string("Sats visible: {}".format(0).center(20), 2)
             self.__lcd.lcd_display_string("  T: {}s".format(int(time.time() - start_time)), 3)
             self.__lcd.lcd_display_string("SELECT to specify...".center(20), 4)
 
+            utc_time = self.__mount.poll_gps()[2]
+
+            if utc_time:
+                print(utc_time)
+                return utc_time
+
             if self.select_pressed():
                 return False
 
             time.sleep(0.1)
-
-        # Unreachable
-        return datetime.now(timezone.utc)
 
     def lcd_three_line_message(self, message: str):
         self.__lcd.lcd_clear()

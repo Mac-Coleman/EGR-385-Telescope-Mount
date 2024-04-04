@@ -63,10 +63,6 @@ def run_telescope():
     # Perform setup routine for user interface.
     interface.setup()
 
-    while True:
-        interface.update()
-        time.sleep(0.1)
-
 
 
 if __name__ == "__main__":

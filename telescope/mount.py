@@ -25,10 +25,28 @@ class Mount:
         self.__uart = busio.UART(board.UART_TX, board.UART_RX)
         self.__gps = adafruit_gps.GPS(self.__uart, debug=False)
 
+        # Turn on RMC/GGA messages.
+        # https://receiverhelp.trimble.com/alloy-gnss/en-us/NMEA-0183messages_MessageOverview.html
+        self.__gps.send_command(b"PMTK314,0,1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0")
+        # One second update period
+        self.__gps.send_command(b"PMTK220,1000")
+
         self.__az_motor = StepperMotor(AZ_PWM_CHANNEL, AZ_DIR_PIN)
         self.__al_motor = StepperMotor(AL_PWM_CHANNEL, AL_DIR_PIN)
 
         self.__setpoint = (0.0, 0.0)  # Azimuth, Altitude Setpoint
+
+    def poll_gps(self):
+        self.__gps.update()
+        return (
+            self.__gps.has_fix,
+            self.__gps.satellites,
+            self.__gps.timestamp_utc,
+            self.__gps.latitude_degrees,
+            self.__gps.latitude_minutes,
+            self.__gps.longitude_degrees,
+            self.__gps.longitude_minutes
+        )
 
     def update(self):
         # Take care of telescope tasks
