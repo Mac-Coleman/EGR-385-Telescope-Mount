@@ -19,6 +19,8 @@ class Mount:
         #   Altitude Motor
         self.__accelerometer = adafruit_adxl34x.ADXL343(i2c_bus)
         self.__magnetometer = adafruit_mmc56x3.MMC5603(i2c_bus)
+        self.__magnetometer.set_reset()
+        self.__magnetometer.reset()
 
         # self.__uart = busio.UART(board.UART_TX, board.UART_RX)
         # self.__gps = adafruit_gps.GPS(self.__uart, debug=False)
@@ -36,5 +38,5 @@ class Mount:
         a_reading = self.__accelerometer.acceleration
 
         print("New reading:")
-        print("H: ", get_heading_from_magnetometer(m_reading), m_reading)
+        # print(f"H: {get_heading_from_magnetometer(m_reading):06.3f}, {m_reading[0]:06.3f}, {m_reading[1]:06.3f}")
         print("A: ", get_altitude_from_accelerometer(a_reading), a_reading)
