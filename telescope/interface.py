@@ -222,9 +222,9 @@ class Interface:
 
     def specify_coordinates(self) -> Optional[Tuple[DMS, DMS, float]]:
 
-        def_lat = DMS(consts.MOUNT_VERNON_IOWA[0])
-        def_lon = DMS(consts.MOUNT_VERNON_IOWA[1])
-        def_alt = int(consts.MOUNT_VERNON_IOWA[2])
+        def_lat = DMS(angle=consts.MOUNT_VERNON_IOWA[0])
+        def_lon = DMS(angle=consts.MOUNT_VERNON_IOWA[1])
+        def_alt = consts.MOUNT_VERNON_IOWA[2]
 
         default = [
             ["Lat", def_lat, self.dms_selection, ["Choose latitude...", def_lat]],
@@ -347,7 +347,7 @@ class Interface:
         keys = self.list_selection("Choose angle...", default, 7)
         dms = None
         try:
-            dms = DMS(keys["Degrees"] + keys["Minutes"]/60 + keys["Seconds"]/(60*60))
+            dms = DMS(d=keys["Degrees"], m=keys["Minutes"], s=keys["Seconds"])
         except ValueError as e:
             self.lcd_three_line_message("Error: invalid angle")
         return dms
