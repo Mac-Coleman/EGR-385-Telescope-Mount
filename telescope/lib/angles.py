@@ -2,9 +2,10 @@
 class DMS:
     def __init__(self, angle=None, limit=180, d: int = 0, m: int = 0, s: int = 0.0, sign: int = 1):
         self.sign = sign
-        self.deg = d
-        self.min = m
-        self.sec = s
+        self.sign *= 1 if d >= 0 else -1
+        self.deg = abs(d)
+        self.min = abs(m)
+        self.sec = abs(s)
         if angle is not None:
             signed_angle = (angle + limit) % (2*limit) - limit
             if signed_angle >= 0:
@@ -18,10 +19,10 @@ class DMS:
             self.sec = s
 
     def __format__(self, spec):
-        return "{}{}{} {:02}' {:04.1f}\"".format(" " if self.sign == 1 else "-", str(self.deg).rjust(4), chr(223), self.min, self.sec)
+        return "{}{} {:02}' {:04.1f}\"".format(str(self.sign * self.deg).rjust(4), chr(223), self.min, self.sec)
 
     def __str__(self):
-       return "{}{} {:02}' {:04.1f}\"".format(str(self.deg).rjust(4), chr(223), self.min, self.sec)
+       return "{}{} {:02}' {:04.1f}\"".format(str(self.sign * self.deg).rjust(4), chr(223), self.min, self.sec)
 
 class HMS:
     def __init__(self, angle):
