@@ -92,7 +92,7 @@ class Interface:
         if utc_time is None:
             utc_time = self.specify_utc_time()
 
-        while utc_time is None or self.yes_or_no(f"Time found: {utc_time.isoformat()[:-6]} Use?"):
+        while utc_time is None or not self.yes_or_no(f"Time found: {utc_time.isoformat()[:-3]} Use?"):
             utc_time = self.specify_utc_time()
 
         gps_coords = self.get_gps_coords()
