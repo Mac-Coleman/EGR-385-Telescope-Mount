@@ -103,9 +103,7 @@ class Interface:
         if gps_coords is None:
             gps_coords = self.specify_coordinates()
 
-        question = f"Use {gps_coords[0]}, " \
-                f"{gps_coords[1]}, " \
-                f"{gps_coords[2]}m?"
+        question = "Use {}, {}, {}m".format(gps_coords[0], gps_coords[1], gps_coords[2])
 
         while not self.yes_or_no(question):
             gps_coords = self.specify_coordinates()
@@ -231,7 +229,7 @@ class Interface:
         default = [
             ["Lat", def_lat, self.dms_selection, ["Choose latitude...", def_lat]],
             ["Lon", def_lon, self.dms_selection, ["Choose longitude...", def_lon]],
-            ["Alt", def_alt, self.float_selection, ["Choose altitude...", def_alt]]
+            ["Alt", def_alt, self.float_selection, ["Choose altitude...", def_alt, -200, 10000, 0.1]]
         ]
 
         keys = self.list_selection("Choose coordinates...", default, 3)
@@ -273,8 +271,11 @@ class Interface:
                 s = ">" if i == selection else " "
                 if i == len(options) - 1:
                     s += "Done".center(19)
+                elif isinstance(options[i][1], float):
+                    s += str(options[i][0])[:cutoff] + ":"
+                    s += f"{options[i][1]:.1f}".rjust(20 - len(s))
                 else:
-                    s += options[i][0][:cutoff] + ":"
+                    s += str(options[i][0])[:cutoff] + ":"
                     s += str(options[i][1]).rjust(20 - len(s))
                 self.__lcd.lcd_display_string(s, i-window+2)
 
@@ -313,7 +314,7 @@ class Interface:
     def float_selection(self, title, start, minimum, maximum, step):
         self.__lcd.lcd_clear()
 
-        start_index = start - minimum
+        start_index = int(start - minimum/step)
         last_encoder = start_index
         width = (maximum - minimum) / step
 
@@ -324,7 +325,7 @@ class Interface:
             selection = minimum + (selection * step)
 
             self.__lcd.lcd_display_string(title.center(20), 1)
-            self.__lcd.lcd_display_string(f"> {selection}", 3)
+            self.__lcd.lcd_display_string(f"> {selection:.1f}", 3)
             self.__lcd.lcd_display_string("SELECT to choose".center(20), 4)
 
             if self.select_pressed():
