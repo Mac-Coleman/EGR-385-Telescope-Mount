@@ -272,10 +272,8 @@ class Interface:
         # Use wheel to adjust number
         self.__lcd.lcd_clear()
 
-
-        # TODO: Fix weird starting values
         start_index = start - min
-        last_encoder = -start_index-1
+        last_encoder = start_index
 
         width = max - min + 1
         while True:
