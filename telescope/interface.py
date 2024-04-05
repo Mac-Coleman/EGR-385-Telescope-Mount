@@ -90,10 +90,10 @@ class Interface:
 
         utc_time = self.get_gps_time()
         if utc_time is None:
-            utc_time = datetime.fromtimestamp(self.specify_utc_time())
+            utc_time = self.specify_utc_time()
 
-        while not self.yes_or_no(f"Time found: {utc_time.isoformat()[:-6]} Use?"):
-            utc_time = datetime.fromtimestamp(self.int_selection("Time", 0, 0, 24))
+        while utc_time is None or self.yes_or_no(f"Time found: {utc_time.isoformat()[:-6]} Use?"):
+            utc_time = self.specify_utc_time()
 
         gps_coords = self.get_gps_coords()
         if gps_coords is None:
@@ -181,6 +181,14 @@ class Interface:
         for lcd_line, line in enumerate(s):
             self.__lcd.lcd_display_string(line.center(20), lcd_line + 1)
 
+        self.__lcd.lcd_display_string("> Okay".center(20), 4)
+
+        while True:
+            if self.select_pressed():
+                return
+
+            time.sleep(0.1)
+
     def error(self, message: str):
         self.__lcd.lcd_clear()
         s = textwrap.fill(message, 20).split("\n")[0:4]
@@ -190,8 +198,7 @@ class Interface:
 
         sys.exit(1)
 
-
-    def specify_utc_time(self):
+    def specify_utc_time(self) -> Optional[datetime]:
         utc_default = datetime.now(timezone.utc) # Based on rpi clock
 
         default = [
@@ -203,7 +210,14 @@ class Interface:
             ["Second", utc_default.second, self.int_selection, ["Select Second...", utc_default.second, 0, 59]]
         ]
 
-        return self.list_selection("Set UTC Time...", default, 6)
+        keys = self.list_selection("Set UTC Time...", default, 6)
+        d = None
+        try:
+            d = datetime(keys["Year"], keys["Month"], keys["Day"], keys["Hour"], keys["Minute"], keys["Second"])
+        except ValueError:
+            self.lcd_three_line_message("Error: Invalid date!")
+        return d
+
 
     def list_selection(self, prompt: str, options: List[List[Union[str, Any, Callable[..., Any], List[Any]]]], cutoff: int):
         # Requires list  of value names, the default value, the function to set a new value, and a list of arguments for that function
