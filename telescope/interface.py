@@ -4,7 +4,8 @@ from telescope.mount import Mount
 import time
 import textwrap
 import sys
-from typing import Optional, Tuple
+from copy import deepcopy
+from typing import Any, Optional, Union, Tuple, List, Callable
 from adafruit_seesaw import seesaw, digitalio, rotaryio
 from datetime import datetime, timezone
 
@@ -38,6 +39,14 @@ class Interface:
         self.__wheel_encoder = rotaryio.IncrementalEncoder(self.__wheel)
 
         self.__mount = Mount(i2c_bus)
+
+        self.__wheel_encoder_last_position = self.__wheel_encoder.position
+
+    def encoder_diff(self):
+        pos = self.__wheel_encoder.position
+        val = pos - self.__wheel_encoder_last_position
+        self.__wheel_encoder_last_position = pos
+        return val
 
     def select_pressed(self):
         return not self.__wheel_select.value
@@ -81,7 +90,7 @@ class Interface:
 
         utc_time = self.get_gps_time()
         if utc_time is None:
-            utc_time = datetime.fromtimestamp(self.int_selection("Time", 0, 0, 24))
+            utc_time = datetime.fromtimestamp(self.specify_utc_time())
 
         while not self.yes_or_no(f"Time found: {utc_time.isoformat()[:-6]} Use?"):
             utc_time = datetime.fromtimestamp(self.int_selection("Time", 0, 0, 24))
@@ -105,15 +114,12 @@ class Interface:
             self.__lcd.lcd_display_string(line.center(20), lcd_line+1)
 
         selection = False
-        last_encoder = self.__wheel_encoder.position
 
         headers = ("   ", " > ")
 
         while True:
-            pos = self.__wheel_encoder.position
-            if pos != last_encoder:
+            if self.encoder_diff():
                 selection = not selection
-                last_encoder = pos
 
             prompt = " " + "{}Yes".format(headers[int(selection)]).rjust(8) + " "
             prompt += ("  " + "{}No".format(headers[int(not selection)]).rjust(6) + "  ")  # Ough
@@ -189,28 +195,78 @@ class Interface:
         utc_default = datetime.now(timezone.utc) # Based on rpi clock
 
         default = [
-            ("Year", utc_default.year),
-            ("Month", utc_default.month),
-            ("Day", utc_default.day),
-            ("Hour", utc_default.hour),
-            ("Minute", utc_default.second)
+            ["Year", utc_default.year, self.int_selection, ["Select Year...", utc_default.year, utc_default.year - 100, utc_default.year + 100]],
+            ["Month", utc_default.month, self.int_selection, ["Select Month...", utc_default.month, 1, 12]],
+            ["Day", utc_default.day, self.int_selection, ["Select Day...", utc_default.day, 1, 31]],
+            ["Hour", utc_default.hour, self.int_selection, ["Select Hour...", utc_default.hour, 0, 23]],
+            ["Minute", utc_default.minute, self.int_selection, ["Select Minute...", utc_default.minute, 0, 59]],
+            ["Second", utc_default.second, self.int_selection, ["Select Second...", utc_default.second, 0, 59]]
         ]
 
-    def list_selection(self):
-        pass
+        return self.list_selection("Set UTC Time...", default, 6)
 
+    def list_selection(self, prompt: str, options: List[List[Union[str, Any, Callable[..., Any], List[Any]]]], cutoff: int):
+        # Requires list  of value names, the default value, the function to set a new value, and a list of arguments for that function
+        self.__lcd.lcd_clear()
+
+        # options = deepcopy(options)
+        options = options[:]
+        options.append(("Done"))
+
+        selection = 0
+        window = 0
+
+        while True:
+            signed_angle = self.encoder_diff()
+            selection += signed_angle
+
+            if self.up_pressed():
+                selection -= 1
+
+            if self.down_pressed():
+                selection += 1
+
+            selection %= len(options)
+
+            if selection < window:
+                window = max(0, selection)
+
+            if selection > window + 2:
+                window = min(selection-2, len(options))
+
+            self.__lcd.lcd_display_string(prompt.center(20), 1)
+
+            for i in range(window, min(window + 3, len(options))):
+                s = ">" if i == selection else " "
+                if i == len(options) - 1:
+                    s += "Done".center(19)
+                else:
+                    s += options[i][0][:cutoff] + ":"
+                    s += str(options[i][1]).rjust(20 - len(s))
+                self.__lcd.lcd_display_string(s, i-window+2)
+
+            if self.select_pressed() or self.right_pressed():
+                if selection == len(options) - 1:
+                    values = {}
+                    for value in options[:-1]:
+                        values[value[0]] = value[1]
+                    return values
+
+                options[selection][1] = options[selection][2](*options[selection][3])
 
     def int_selection(self, title, start, min, max):
         # Use wheel to adjust number
         self.__lcd.lcd_clear()
 
+
+        # TODO: Fix weird starting values
         start_index = start - min
-        first_encoder = self.__wheel_encoder.position - start_index
+        last_encoder = -start_index-1
 
         width = max - min + 1
         while True:
-            current = self.__wheel_encoder.position
-            selection = current - first_encoder
+            selection = last_encoder + self.encoder_diff()
+            last_encoder = selection
             selection %= width
             selection = min + selection
 
