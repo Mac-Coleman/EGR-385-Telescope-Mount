@@ -6,6 +6,8 @@ from telescope.mount import Mount
 import time
 import board
 from adafruit_seesaw import seesaw, digitalio
+from rpi_hardware_pwm import HardwarePWM
+import RPi.GPIO as GPIO
 
 print("The telescope is now running...")
 
@@ -61,7 +63,16 @@ def run_telescope():
     i2c = board.I2C()
     interface = Interface(i2c)
     # Perform setup routine for user interface.
-    interface.setup()
+
+    try:
+        interface.setup()
+    except Exception as e:
+        print(f"Halting due to {e}")
+        print(traceback.format_exc())
+    finally:
+        HardwarePWM(pwm_channel=0, hz=10).stop()
+        HardwarePWM(pwm_channel=1, hz=10).stop()
+        GPIO.cleanup
 
 
 

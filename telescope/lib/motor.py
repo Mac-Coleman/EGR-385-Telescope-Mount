@@ -14,13 +14,19 @@ class StepperMotor:
         self.__max_speed = max_speed
         self.__max_acceleration = max_acceleration
 
+        GPIO.setmode(GPIO.BCM)
+        GPIO.setup(self.__pin_dir, GPIO.OUT)
+
     def run(self, sensor_value, setpoint, tolerance=0.01):
         direction = int(setpoint >= sensor_value)
         GPIO.output(self.__pin_dir, direction)
 
-        if abs(setpoint - sensor_value) > tolerance:
+        condition = abs(setpoint - sensor_value) > tolerance
+
+        if condition:
+            self.__driver.change_frequency(10)
             self.__driver.start(50)
         else:
             self.__driver.stop()
 
-        return abs(setpoint - sensor_value) > tolerance
+        return not condition

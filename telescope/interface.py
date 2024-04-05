@@ -72,7 +72,7 @@ class Interface:
 
 
 
-        time.sleep(5)
+        self.level_altitude()
 
         leveled = self.yes_or_no("Is the telescope level?")
 
