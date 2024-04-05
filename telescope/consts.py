@@ -4,6 +4,7 @@ DEBUG_TIMEOUT = 15
 # World stuff
 TRUE_NORTH = (0, 0)  # Lat, Long
 MAGNETIC_NORTH_2024 = (86.0, 142.0)  # Lat, Long
+MOUNT_VERNON_IOWA = (41.9220, -91.4168, 267.919)
 # https://wdc.kugi.kyoto-u.ac.jp/poles/polesexp.html
 
 # Accelerometer Stuff

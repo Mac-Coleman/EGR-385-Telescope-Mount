@@ -1,6 +1,9 @@
 from telescope.lib.lcddriver import lcd
 from telescope.mount import Mount
 
+from telescope import consts
+from telescope.lib.angles import DMS, HMS
+
 import time
 import textwrap
 import sys
@@ -8,6 +11,7 @@ from copy import deepcopy
 from typing import Any, Optional, Union, Tuple, List, Callable
 from adafruit_seesaw import seesaw, digitalio, rotaryio
 from datetime import datetime, timezone
+
 
 
 class Interface:
@@ -97,14 +101,14 @@ class Interface:
 
         gps_coords = self.get_gps_coords()
         if gps_coords is None:
-            gps_coords = (0.0, 0.0, 0.0)
+            gps_coords = self.specify_coordinates()
 
-        question = f"Use {gps_coords[0]:.2f} {'N' if gps_coords[0] >= 0.0 else 'S'}, " \
-                f"{gps_coords[1]:.2f} {'E' if gps_coords[1] >= 0.0 else 'W'}, " \
+        question = f"Use {gps_coords[0]}, " \
+                f"{gps_coords[1]}, " \
                 f"{gps_coords[2]}m?"
 
         while not self.yes_or_no(question):
-            gps_coords = (self.int_selection("Choose coord", 0, -90, 90), 0.0, 0.0)
+            gps_coords = self.specify_coordinates()
 
     def yes_or_no(self, question: str):
         self.__lcd.lcd_clear()
@@ -218,6 +222,21 @@ class Interface:
             self.lcd_three_line_message("Error: Invalid date!")
         return d
 
+    def specify_coordinates(self) -> Optional[Tuple[DMS, DMS, float]]:
+
+        def_lat = DMS(consts.MOUNT_VERNON_IOWA[0])
+        def_lon = DMS(consts.MOUNT_VERNON_IOWA[1])
+        def_alt = consts.MOUNT_VERNON_IOWA[2]
+
+        default = [
+            ["Lat", def_lat, self.dms_selection, ["Choose latitude...", def_lat]],
+            ["Lon", def_lon, self.dms_selection, ["Choose longitude...", def_lon]],
+            ["Alt", def_alt, self.float_selection, ["Choose altitude...", def_alt]]
+        ]
+
+        keys = self.list_selection("Choose coordinates...", default, 3)
+        return keys["Lat"], keys["Lon"], keys["Alt"]
+
 
     def list_selection(self, prompt: str, options: List[List[Union[str, Any, Callable[..., Any], List[Any]]]], cutoff: int):
         # Requires list  of value names, the default value, the function to set a new value, and a list of arguments for that function
@@ -268,19 +287,19 @@ class Interface:
 
                 options[selection][1] = options[selection][2](*options[selection][3])
 
-    def int_selection(self, title, start, min, max):
+    def int_selection(self, title, start, minimum, maximum):
         # Use wheel to adjust number
         self.__lcd.lcd_clear()
 
-        start_index = start - min
+        start_index = start - minimum
         last_encoder = start_index
 
-        width = max - min + 1
+        width = maximum - minimum + 1
         while True:
             selection = last_encoder + self.encoder_diff()
             last_encoder = selection
             selection %= width
-            selection = min + selection
+            selection = minimum + selection
 
             self.__lcd.lcd_display_string(title.center(20), 1)
             self.__lcd.lcd_display_string(f"> {selection}", 3)
@@ -290,6 +309,48 @@ class Interface:
                 return selection
 
             time.sleep(0.1)
+
+    def float_selection(self, title, start, minimum, maximum, step):
+        self.__lcd.lcd_clear()
+
+        start_index = start - minimum
+        last_encoder = start_index
+        width = (maximum - minimum) / step
+
+        while True:
+            selection = last_encoder + self.encoder_diff()
+            last_encoder = selection
+            selection %= width
+            selection = minimum + (selection * step)
+
+            self.__lcd.lcd_display_string(title.center(20), 1)
+            self.__lcd.lcd_display_string(f"> {selection}", 3)
+            self.__lcd.lcd_display_string("SELECT to choose".center(20), 4)
+
+            if self.select_pressed():
+                return selection
+
+            time.sleep(0.1)
+
+    def dms_selection(self, title, default_dms: DMS, dec=False):
+        width = 180
+        if dec:
+            width = 90
+
+        default = [
+            ["Degrees", default_dms.deg, self.int_selection, ["Choose degrees...", default_dms.deg, -width, width]],
+            ["Minutes", default_dms.min, self.int_selection, ["Choose minutes...", default_dms.min, 0, 60]],
+            ["Seconds", default_dms.sec, self.float_selection, ["Choose minutes...", default_dms.sec, 0, 60, 0.1]]
+        ]
+
+        keys = self.list_selection("Choose angle...", default, 7)
+        dms = None
+        try:
+            dms = DMS(keys["Degrees"] + keys["Minutes"]/60 + keys["Seconds"]/(60*60))
+        except ValueError as e:
+            self.lcd_three_line_message("Error: invalid angle")
+        return dms
+
 
 
     def update(self):

@@ -48,7 +48,7 @@ class Mount:
             self.__gps.longitude,
             self.__gps.longitude_degrees,
             self.__gps.longitude_minutes,
-            self.__gps.height_geoid
+            self.__gps.altitude_m  # No idea if I should use this or geoidal separation
         )
 
     def update(self):
