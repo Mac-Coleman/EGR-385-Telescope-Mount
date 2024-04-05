@@ -203,16 +203,16 @@ class Interface:
     def int_selection(self, title, start, min, max):
         # Use wheel to adjust number
         self.__lcd.lcd_clear()
-        first_encoder = self.__wheel_encoder.position
 
-        selection = start
-        width = max - min
+        start_index = start - min
+        first_encoder = self.__wheel_encoder.position - start_index
+
+        width = max - min + 1
         while True:
             current = self.__wheel_encoder.position
             selection = current - first_encoder
             selection %= width
-            selection *= 1 if current >= first_encoder else -1
-            selection += start
+            selection = min + selection
 
             self.__lcd.lcd_display_string(title.center(20), 1)
             self.__lcd.lcd_display_string(f"> {selection}", 3)
