@@ -224,12 +224,12 @@ class Interface:
 
         def_lat = DMS(consts.MOUNT_VERNON_IOWA[0])
         def_lon = DMS(consts.MOUNT_VERNON_IOWA[1])
-        def_alt = consts.MOUNT_VERNON_IOWA[2]
+        def_alt = int(consts.MOUNT_VERNON_IOWA[2])
 
         default = [
             ["Lat", def_lat, self.dms_selection, ["Choose latitude...", def_lat]],
             ["Lon", def_lon, self.dms_selection, ["Choose longitude...", def_lon]],
-            ["Alt", def_alt, self.float_selection, ["Choose altitude...", def_alt, -200, 10000, 0.1]]
+            ["Alt", def_alt, self.int_selection, ["Choose altitude...", def_alt, -200, 10000]]
         ]
 
         keys = self.list_selection("Choose coordinates...", default, 3)
@@ -334,14 +334,14 @@ class Interface:
             time.sleep(0.1)
 
     def dms_selection(self, title, default_dms: DMS, dec=False):
-        width = 180
+        width = 179
         if dec:
-            width = 90
+            width = 89
 
         default = [
             ["Degrees", default_dms.deg, self.int_selection, ["Choose degrees...", default_dms.deg, -width, width]],
-            ["Minutes", default_dms.min, self.int_selection, ["Choose minutes...", default_dms.min, 0, 60]],
-            ["Seconds", default_dms.sec, self.float_selection, ["Choose minutes...", default_dms.sec, 0, 60, 0.1]]
+            ["Minutes", default_dms.min, self.int_selection, ["Choose minutes...", default_dms.min, 0, 59]],
+            ["Seconds", int(default_dms.sec), self.int_selection, ["Choose seconds...", int(default_dms.sec), 0, 59]]
         ]
 
         keys = self.list_selection("Choose angle...", default, 7)
