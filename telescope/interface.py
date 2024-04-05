@@ -224,7 +224,7 @@ class Interface:
 
         def_lat = DMS(angle=consts.MOUNT_VERNON_IOWA[0])
         def_lon = DMS(angle=consts.MOUNT_VERNON_IOWA[1])
-        def_alt = consts.MOUNT_VERNON_IOWA[2]
+        def_alt = int(consts.MOUNT_VERNON_IOWA[2])
 
         default = [
             ["Lat", def_lat, self.dms_selection, ["Choose latitude...", def_lat]],
