@@ -7,7 +7,20 @@ import RPi.GPIO as GPIO
 
 class StepperMotor:
     def __init__(self, pwm_channel, pin_dir, max_speed, max_acceleration, min_speed=10):
-        pass
+        self.__driver = HardwarePWM(pwm_channel=pwm_channel, hz=min_speed)
+        self.__driver.stop()
 
-    def update(self, sensor_value, setpoint):
-        pass
+        self.__pin_dir = pin_dir
+        self.__max_speed = max_speed
+        self.__max_acceleration = max_acceleration
+
+    def run(self, sensor_value, setpoint, tolerance=0.01):
+        direction = int(setpoint >= sensor_value)
+        GPIO.output(self.__pin_dir, direction)
+
+        if abs(setpoint - sensor_value) > tolerance:
+            self.__driver.start(50)
+        else:
+            self.__driver.stop()
+
+        return abs(setpoint - sensor_value) > tolerance

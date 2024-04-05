@@ -70,9 +70,7 @@ class Interface:
     def setup(self):
         print("Setup started.")
 
-        self.__lcd.lcd_clear()
-        self.__lcd.lcd_display_string("Zeroing altitude".center(20), 1)
-        self.__lcd.lcd_display_string("Please wait".center(20), 4)
+
 
         time.sleep(5)
 
@@ -352,7 +350,13 @@ class Interface:
             self.lcd_three_line_message("Error: invalid angle")
         return dms
 
+    def level_altitude(self):
+        self.__lcd.lcd_clear()
+        self.__lcd.lcd_display_string("Zeroing altitude".center(20), 1)
+        self.__lcd.lcd_display_string("Please wait".center(20), 4)
 
+        while not self.__mount.level_altitude():
+            self.__lcd.lcd_display_string(f"{self.__mount.get_altitude():.1f}" + chr(223), 3)
 
     def update(self):
         pass

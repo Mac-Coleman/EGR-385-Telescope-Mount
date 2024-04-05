@@ -51,6 +51,14 @@ class Mount:
             self.__gps.altitude_m  # No idea if I should use this or geoidal separation
         )
 
+    def get_altitude(self):
+        return get_altitude_from_accelerometer(self.__accelerometer.acceleration)
+
+    def level_altitude(self):
+        acceleration = self.__accelerometer.acceleration
+        altitude = get_altitude_from_accelerometer(acceleration)
+        return self.__al_motor.run(altitude, 0)
+
     def update(self):
         # Take care of telescope tasks
         # For now we will just print the heading and altitude
