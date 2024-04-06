@@ -331,12 +331,14 @@ class Interface:
 
                 options[selection][1] = options[selection][2](*options[selection][3])
 
-    def choose_from_list(self, prompt: str, options: List[List[Union[str, Callable[..., Any], List[Any]]]]):
+    def choose_from_list(self, prompt: str, options: List[List[Union[str, Callable[..., Any], List[Any]]]], exitable):
         # Requires list  of action names, the function to perform that action, and a list of arguments for that function
         self.__lcd.lcd_clear()
 
         # options = deepcopy(options)
         options = options[:]
+        if exitable:
+            options.append(["Back", None, []])
 
         selection = 0
         window = 0
@@ -359,14 +361,16 @@ class Interface:
             if selection > window + 2:
                 window = min(selection-2, len(options))
 
-            self.__lcd.lcd_display_string(prompt.center(20), 1)
+            self.__lcd.lcd_display_string(prompt.ljust(20), 1)
 
             for i in range(window, min(window + 3, len(options))):
                 s = ">" if i == selection else " "
-                s += options[i][0].center(19)
+                s += options[i][0].rjust(19)
                 self.__lcd.lcd_display_string(s, i-window+2)
 
             if self.select_pressed() or self.right_pressed():
+                if selection == len(options) - 1:
+                    return None
                 return options[selection][1](*options[selection][2])
 
     def int_selection(self, title, start, minimum, maximum):
@@ -587,7 +591,7 @@ class Interface:
             ["Settings", None, []]
         ]
 
-        return self.choose_from_list("Choose Action", actions)
+        return self.choose_from_list("Choose Action", actions, False)
 
     def all_objects(self, favorites_only):
         actions = [
@@ -598,7 +602,7 @@ class Interface:
         ]
 
         title = "Favorites" if favorites_only else "Type"
-        return self.choose_from_list(title, actions)
+        return self.choose_from_list(title, actions, True)
 
     def settings(self):
         actions = [
@@ -609,7 +613,7 @@ class Interface:
             ["Declination", None, []],
         ]
 
-        return self.choose_from_list("Settings", actions)
+        return self.choose_from_list("Settings", actions, True)
 
 
 
