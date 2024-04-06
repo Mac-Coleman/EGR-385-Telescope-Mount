@@ -14,6 +14,8 @@ from adafruit_seesaw import seesaw, digitalio, rotaryio
 from datetime import datetime, timezone
 import magnetismi.magnetismi as magnetic_api
 
+from skyfield.api import Loader, wgs84, Star
+
 
 class Interface:
     def __init__(self, i2c_bus):
@@ -44,8 +46,17 @@ class Interface:
         self.__wheel_encoder = rotaryio.IncrementalEncoder(self.__wheel)
 
         self.__mount = Mount(i2c_bus)
-
         self.__wheel_encoder_last_position = self.__wheel_encoder.position
+
+        self.__latitude_degrees = consts.MOUNT_VERNON_IOWA[0]
+        self.__longitude_degrees = consts.MOUNT_VERNON_IOWA[1]
+        self.__altitude_meters = consts.MOUNT_VERNON_IOWA[2]
+
+        self.__skyfield_loader = Loader(cache_path() / "skyfield")
+        self.__planets = self.__skyfield_loader("de421.bsp")
+
+        self.__wgs84 = wgs84.latlon(self.__latitude_degrees, self.__longitude_degrees, self.__altitude_meters)
+        self.__location = self.__planets["earth"] + self.__wgs84
 
     def encoder_diff(self):
         pos = self.__wheel_encoder.position
@@ -113,12 +124,16 @@ class Interface:
         lat = gps_coords[0]
         lon = gps_coords[1]
 
-        la = lat.sign * (lat.deg + lat.min/60 + lat.sec/(60*60))
-        lo = lon.sign * (lon.deg + lon.min / 60 + lon.sec / (60 * 60))
+        self.__latitude_degrees = lat.sign * (lat.deg + lat.min/60 + lat.sec/(60*60))
+        self.__longitude_degrees = lon.sign * (lon.deg + lon.min / 60 + lon.sec / (60 * 60))
+        self.__altitude_meters = gps_coords[2]
+
+        self.__wgs84 = wgs84(self.__latitude_degrees, self.__longitude_degrees, self.__altitude_meters)
+        self.__location = self.__planets["earth"] + self.__wgs84
 
         model = magnetic_api.Model(utc_time.year)
         date = magnetic_api.dti.date(utc_time.year, utc_time.month, utc_time.day)
-        point = model.at(lat_dd=la, lon_dd=lo, alt_ft=gps_coords[2] * consts.METERS_TO_FEET)
+        point = model.at(lat_dd=self.__latitude_degrees, lon_dd=self.__longitude_degrees, alt_ft=gps_coords[2] * consts.METERS_TO_FEET)
         mag_declination = point.dec
 
         use_calculated_declination = self.yes_or_no(f"Magnetic dec. found: {mag_declination:.2f}{chr(223)}. Use?")
@@ -133,39 +148,8 @@ class Interface:
         if test_az:
             self.test_azimuth()
 
-        from skyfield.api import Star, Loader, wgs84
-
-        p = cache_path() / "skyfield"
-        p.mkdir(parents=True, exist_ok=True)
-
-        load = Loader(p)
-        planets = load('de421.bsp')
-        earth = planets["earth"]
-
-        object = planets["sun"]  # Star(ra_hours=(18, 36, 56.33635), dec_degrees=(38, 47, 01.2802))
-
-        ts = load.timescale()
-        location = earth + wgs84.latlon(la, lo)
-
-        update_count = 0
         while True:
-            t = ts.now()
-
-            apparent = location.at(t).observe(object).apparent()
-            alt, az, dist = apparent.altaz()
-
-            self.__mount.set_setpoint(alt.degrees, az.degrees)
-            _, _, _, sv, sp, speed = self.__mount.go_to_setpoint()
-
-            update_count += 1
-
-            if update_count % 50 == 0:
-                self.__lcd.lcd_display_string(f"S:{sv:.2f}", 1)
-                self.__lcd.lcd_display_string(f"V:{sp:.2f}", 2)
-                self.__lcd.lcd_display_string(f"E:{sp - sv:.2f}", 3)
-                self.__lcd.lcd_display_string(f"Sp:{speed:.2f}", 4)
-
-
+            self.choose_main_action()
 
     def yes_or_no(self, question: str):
         self.__lcd.lcd_clear()
@@ -347,6 +331,44 @@ class Interface:
 
                 options[selection][1] = options[selection][2](*options[selection][3])
 
+    def choose_from_list(self, prompt: str, options: List[List[Union[str, Callable[..., Any], List[Any]]]]):
+        # Requires list  of action names, the function to perform that action, and a list of arguments for that function
+        self.__lcd.lcd_clear()
+
+        # options = deepcopy(options)
+        options = options[:]
+
+        selection = 0
+        window = 0
+
+        while True:
+            signed_angle = self.encoder_diff()
+            selection += signed_angle
+
+            if self.up_pressed():
+                selection -= 1
+
+            if self.down_pressed():
+                selection += 1
+
+            selection %= len(options)
+
+            if selection < window:
+                window = max(0, selection)
+
+            if selection > window + 2:
+                window = min(selection-2, len(options))
+
+            self.__lcd.lcd_display_string(prompt.center(20), 1)
+
+            for i in range(window, min(window + 3, len(options))):
+                s = ">" if i == selection else " "
+                s += options[i][0].center(19)
+                self.__lcd.lcd_display_string(s, i-window+2)
+
+            if self.select_pressed() or self.right_pressed():
+                return options[selection][1](*options[selection][2])
+
     def int_selection(self, title, start, minimum, maximum):
         # Use wheel to adjust number
         self.__lcd.lcd_clear()
@@ -522,6 +544,50 @@ class Interface:
             time.sleep(0.005)
 
         self.__mount.stop()
+
+    def track_sun(self):
+        from skyfield.api import Star, Loader, wgs84
+
+        p = cache_path() / "skyfield"
+        p.mkdir(parents=True, exist_ok=True)
+
+        load = Loader(p)
+        planets = load('de421.bsp')
+        earth = planets["earth"]
+
+        object = planets["sun"]  # Star(ra_hours=(18, 36, 56.33635), dec_degrees=(38, 47, 01.2802))
+
+        ts = load.timescale()
+        location = earth + wgs84.latlon(self.__latitude_degrees, self.__longitude_degrees, self.__altitude_meters)
+
+        update_count = 0
+        while True:
+            t = ts.now()
+
+            apparent = location.at(t).observe(object).apparent()
+            alt, az, dist = apparent.altaz()
+
+            self.__mount.set_setpoint(alt.degrees, az.degrees)
+            _, _, _, sv, sp, speed = self.__mount.go_to_setpoint()
+
+            update_count += 1
+
+            if update_count % 50 == 0:
+                self.__lcd.lcd_display_string(f"S:{sv:.2f}", 1)
+                self.__lcd.lcd_display_string(f"V:{sp:.2f}", 2)
+                self.__lcd.lcd_display_string(f"E:{sp - sv:.2f}", 3)
+                self.__lcd.lcd_display_string(f"Sp:{speed:.2f}", 4)
+
+    def choose_main_action(self):
+        actions = [
+            ["Objects", None, []],
+            ["Favorites", None, []],
+            ["Coordinate", None, []],
+            ["Manual", None, []],
+            ["Settings", None, []]
+        ]
+
+        return self.choose_from_list("Choose Action", actions)
 
 
 
