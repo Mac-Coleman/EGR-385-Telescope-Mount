@@ -591,7 +591,7 @@ class Interface:
             ["Objects", self.all_objects, [False]],
             ["Favorites", self.all_objects, [True]],
             ["Coordinates", None, []],
-            ["Manual", None, []],
+            ["Manual", self.manual, []],
             ["Settings", self.settings, []]
         ]
 
@@ -618,6 +618,39 @@ class Interface:
         ]
 
         return self.choose_from_list("Settings", actions, True)
+
+    def manual(self):
+        level = 10
+        self.encoder_diff()
+
+        while True:
+
+            level += self.encoder_diff()
+
+            if level > 10:
+                level = 10
+            if level < 1:
+                level = 1
+
+            az_speed = consts.AZ_MAX_SPEED * level/10
+            al_speed = consts.AL_MAX_SPEED * level/10
+
+            az_dir = 1 if self.right_pressed() else 0
+            az_dir = -1 if self.left_pressed() else az_dir
+
+            al_dir = 1 if self.up_pressed() else 0
+            al_dir = -1 if self.down_pressed() else al_dir
+
+            self.__mount.spin_azimuth(az_speed * az_dir)
+            self.__mount.spin_altitude(al_speed * al_dir)
+
+            self.__lcd.lcd_display_string("Manual" + f"{level}".rjust(14), 1)
+            self.__lcd.lcd_display_string(f"Al: {DMS(angle=self.__mount.get_altitude())}", 2)
+            self.__lcd.lcd_display_string(f"Az: {DMS(angle=self.__mount.get_heading())}", 3)
+            self.__lcd.lcd_display_string("SELECT to quit".center(20), 4)
+
+            if self.select_pressed():
+                break
 
 
 
