@@ -155,14 +155,15 @@ class Interface:
             alt, az, dist = apparent.altaz()
 
             self.__mount.set_setpoint(alt.degrees, az.degrees)
-            self.__mount.go_to_setpoint()
+            _, _, _, sv, sp, speed = self.__mount.go_to_setpoint()
+
             update_count += 1
 
             if update_count % 50 == 0:
-                self.__lcd.lcd_display_string("Vega".center(20), 1)
-                self.__lcd.lcd_display_string(f"AL: {alt.dstr()}", 2)
-                self.__lcd.lcd_display_string(f"AZ: {az.dstr()}", 3)
-                self.__lcd.lcd_display_string("Distance: " + f"{(dist.km / 9.46073e12):.1f}".rjust(8) + "ly", 4)
+                self.__lcd.lcd_display_string(f"S:{sv:.2f}", 1)
+                self.__lcd.lcd_display_string(f"V:{sp:.2f}", 2)
+                self.__lcd.lcd_display_string(f"E:{sp - sv:.2f}", 3)
+                self.__lcd.lcd_display_string(f"Sp:{speed:.2f}", 4)
 
 
 

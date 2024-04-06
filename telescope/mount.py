@@ -30,8 +30,8 @@ class Mount:
         # One second update period
         self.__gps.send_command(b"PMTK220,1000")
 
-        self.__az_motor = StepperMotor(consts.AZ_PWM_CHANNEL, consts.AZ_DIR_PIN, consts.AZ_MAX_SPEED, consts.AZ_MAX_ACCELERATION)
-        self.__al_motor = StepperMotor(consts.AL_PWM_CHANNEL, consts.AL_DIR_PIN, 300, consts.AZ_MAX_ACCELERATION)
+        self.__az_motor = StepperMotor(consts.AZ_PWM_CHANNEL, consts.AZ_DIR_PIN, consts.AZ_MAX_SPEED, consts.AZ_MAX_ACCELERATION, sign=consts.AZ_DIRECTION_SIGN)
+        self.__al_motor = StepperMotor(consts.AL_PWM_CHANNEL, consts.AL_DIR_PIN, 300, consts.AZ_MAX_ACCELERATION, sign=consts.AL_DIRECTION_SIGN)
 
         self.__setpoint_altitude = 0.0
         self.__setpoint_azimuth = 0.0
@@ -84,7 +84,7 @@ class Mount:
     def level_altitude(self):
         acceleration = self.__accelerometer.acceleration
         altitude = get_altitude_from_accelerometer(acceleration)
-        return self.__al_motor.run(altitude, 0)
+        return self.__al_motor.run(altitude, 0)[0]
 
     def stop(self):
         self.__az_motor.stop()
@@ -108,5 +108,6 @@ class Mount:
         # Take care of telescope tasks
         # For now we will just print the heading and altitude
 
-        self.__al_motor.run(self.get_altitude(), self.__setpoint_altitude)
-        self.__az_motor.run(self.get_azimuth(), self.__setpoint_azimuth)
+        al = self.__al_motor.run(self.get_altitude(), self.__setpoint_altitude)
+        az = self.__az_motor.run(self.get_azimuth(), self.__setpoint_azimuth)
+        return *al[1:], *az[1:]
