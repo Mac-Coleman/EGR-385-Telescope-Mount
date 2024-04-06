@@ -12,9 +12,7 @@ from copy import deepcopy
 from typing import Any, Optional, Union, Tuple, List, Callable
 from adafruit_seesaw import seesaw, digitalio, rotaryio
 from datetime import datetime, timezone
-
 import magnetismi.magnetismi as magnetic_api
-
 
 
 class Interface:
@@ -121,6 +119,10 @@ class Interface:
             mag_declination = md.sign * (md.deg + md.min/60.0 + md.sec/(60*60))
 
         self.__mount.set_mag_declination(mag_declination)
+
+        test_az = self.yes_or_no("Test azimuth / orientation?")
+        if test_az:
+            self.test_azimuth()
 
     def yes_or_no(self, question: str):
         self.__lcd.lcd_clear()
@@ -435,8 +437,13 @@ class Interface:
         if use_offset:
             self.__mount.set_offsets(offset_x, offset_y)
 
+        return use_offset
+
+    def test_azimuth(self):
         self.__lcd.lcd_clear()
         self.__lcd.lcd_display_string("Testing orientation".center(20), 2)
+
+        from telescope.consts import AZ_MAX_SPEED
 
         for i in range(10, AZ_MAX_SPEED+1, 10):
             self.__mount.spin_azimuth(i)
@@ -459,8 +466,6 @@ class Interface:
             time.sleep(0.005)
 
         self.__mount.stop()
-
-        return use_offset
 
 
 

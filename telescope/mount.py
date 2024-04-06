@@ -57,6 +57,9 @@ class Mount:
     def get_altitude(self):
         return get_altitude_from_accelerometer(self.__accelerometer.acceleration)
 
+    def get_azimuth(self):
+        return self.get_heading() - self.__magnetic_declination
+
     def get_magnetic(self):
         return self.__magnetometer.magnetic
 
