@@ -162,7 +162,7 @@ class Interface:
                 self.__lcd.lcd_display_string("Polaris".center(20), 1)
                 self.__lcd.lcd_display_string(f"AL: {alt.dstr()}", 2)
                 self.__lcd.lcd_display_string(f"AZ: {az.dstr()}", 3)
-                self.__lcd.lcd_display_string(f"Distance: {str(dist).rjust(10)}", 4)
+                self.__lcd.lcd_display_string("Distance: " + f"{(dist.km / 9.46073e12):.1f}".rjust(8) + "ly", 4)
 
 
 
