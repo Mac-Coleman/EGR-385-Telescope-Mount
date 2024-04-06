@@ -365,7 +365,11 @@ class Interface:
 
             for i in range(window, min(window + 3, len(options))):
                 s = ">" if i == selection else " "
-                s += options[i][0].rjust(19)
+                if i == len(options) - 1:
+                    s += options[i][0].center(20 - len(s))
+                else:
+                    s += str(i) + "."
+                    s += options[i][0].rjust(20 - len(s))
                 self.__lcd.lcd_display_string(s, i-window+2)
 
             if self.select_pressed() or self.right_pressed():
@@ -588,7 +592,7 @@ class Interface:
             ["Favorites", self.all_objects, [True]],
             ["Coordinates", None, []],
             ["Manual", None, []],
-            ["Settings", None, []]
+            ["Settings", self.settings, []]
         ]
 
         return self.choose_from_list("Choose Action", actions, False)
