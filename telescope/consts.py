@@ -24,10 +24,12 @@ AZ_DIR_PIN = 24
 AZ_PWM_CHANNEL = 1  # GPIO 19
 AZ_MAX_SPEED = 4800  # Pulses per second
 AZ_MAX_ACCELERATION = 1000  # Pulses per second squared
+AZ_DIRECTION_SIGN = 1  # Pulsing while AZ_DIR_PIN is low causes azimuth to INCREASE
 
 AL_DIR_PIN = 23
 AL_PWM_CHANNEL = 0  # GPIO 18
 AL_MAX_SPEED = 2000  # Pulses per second
 AL_MAX_ACCELERATION = 1000  # Pulses per second squared
+AL_DIRECTION_SIGN = -1 # Pulsing while AL_DIR_PIN is low causes altitude to DECREASE
 
 DUTY_CYCLE = 50
