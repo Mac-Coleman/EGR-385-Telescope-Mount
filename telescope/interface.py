@@ -128,7 +128,7 @@ class Interface:
         self.__longitude_degrees = lon.sign * (lon.deg + lon.min / 60 + lon.sec / (60 * 60))
         self.__altitude_meters = gps_coords[2]
 
-        self.__wgs84 = wgs84(self.__latitude_degrees, self.__longitude_degrees, self.__altitude_meters)
+        self.__wgs84 = wgs84.latlon(self.__latitude_degrees, self.__longitude_degrees, self.__altitude_meters)
         self.__location = self.__planets["earth"] + self.__wgs84
 
         model = magnetic_api.Model(utc_time.year)
@@ -580,14 +580,36 @@ class Interface:
 
     def choose_main_action(self):
         actions = [
-            ["Objects", None, []],
-            ["Favorites", None, []],
-            ["Coordinate", None, []],
+            ["Objects", self.all_objects, [False]],
+            ["Favorites", self.all_objects, [True]],
+            ["Coordinates", None, []],
             ["Manual", None, []],
             ["Settings", None, []]
         ]
 
         return self.choose_from_list("Choose Action", actions)
+
+    def all_objects(self, favorites_only):
+        actions = [
+            ["Planets", None, [favorites_only]],
+            ["Stars", None, [favorites_only]],
+            ["Messier", None, [favorites_only]],
+            ["Satellites", None, [favorites_only]],
+        ]
+
+        title = "Favorites" if favorites_only else "Type"
+        return self.choose_from_list(title, actions)
+
+    def settings(self):
+        actions = [
+            ["Accelerometer", None, []],
+            ["Magnetometer", None, []],
+            ["Location", None, []],
+            ["Time", None, []],
+            ["Declination", None, []],
+        ]
+
+        return self.choose_from_list("Settings", actions)
 
 
 
