@@ -97,7 +97,7 @@ class Mount:
         self.__al_motor.set_speed(speed)
 
     def set_setpoint(self, altitude: float, azimuth: float):
-        if altitude < 10:
+        if altitude < -10:
             raise ValueError("Attempted to point telescope significantly below the horizon!")
         if altitude > 89:
             raise ValueError("Attempted to point telescope near the zenith singularity!")
