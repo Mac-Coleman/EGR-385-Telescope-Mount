@@ -142,7 +142,7 @@ class Interface:
         planets = load('de421.bsp')
         earth = planets["earth"]
 
-        polaris = Star(ra_hours=(2, 31, 49.09), dec_degrees=(89, 15, 50.8))
+        vega = Star(ra_hours=(18, 36, 56.33635), dec_degrees=(38, 47, 01.2802))
 
         ts = load.timescale()
         location = earth + wgs84.latlon(la, lo)
@@ -151,7 +151,7 @@ class Interface:
         while True:
             t = ts.now()
 
-            apparent = location.at(t).observe(polaris).apparent()
+            apparent = location.at(t).observe(vega).apparent()
             alt, az, dist = apparent.altaz()
 
             self.__mount.set_setpoint(alt.degrees, az.degrees)
@@ -159,7 +159,7 @@ class Interface:
             update_count += 1
 
             if update_count % 50 == 0:
-                self.__lcd.lcd_display_string("Polaris".center(20), 1)
+                self.__lcd.lcd_display_string("Vega".center(20), 1)
                 self.__lcd.lcd_display_string(f"AL: {alt.dstr()}", 2)
                 self.__lcd.lcd_display_string(f"AZ: {az.dstr()}", 3)
                 self.__lcd.lcd_display_string("Distance: " + f"{(dist.km / 9.46073e12):.1f}".rjust(8) + "ly", 4)

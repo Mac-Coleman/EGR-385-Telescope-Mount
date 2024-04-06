@@ -31,7 +31,7 @@ class Mount:
         self.__gps.send_command(b"PMTK220,1000")
 
         self.__az_motor = StepperMotor(consts.AZ_PWM_CHANNEL, consts.AZ_DIR_PIN, consts.AZ_MAX_SPEED, consts.AZ_MAX_ACCELERATION)
-        self.__al_motor = StepperMotor(consts.AL_PWM_CHANNEL, consts.AL_DIR_PIN, consts.AL_MAX_SPEED, consts.AZ_MAX_ACCELERATION)
+        self.__al_motor = StepperMotor(consts.AL_PWM_CHANNEL, consts.AL_DIR_PIN, 300, consts.AZ_MAX_ACCELERATION)
 
         self.__setpoint_altitude = 0.0
         self.__setpoint_azimuth = 0.0
