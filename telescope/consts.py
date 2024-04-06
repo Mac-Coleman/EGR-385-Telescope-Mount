@@ -6,6 +6,7 @@ TRUE_NORTH = (90, 0)  # Lat, Long
 MAGNETIC_NORTH_2024 = (86.0, 142.0)  # Lat, Long
 MOUNT_VERNON_IOWA = (41.9220, -91.4168, 267.919)
 # https://wdc.kugi.kyoto-u.ac.jp/poles/polesexp.html
+METERS_TO_FEET = 3.28084
 
 # Accelerometer Stuff
 ACCELEROMETER_FORWARD = (1, 0, 0)

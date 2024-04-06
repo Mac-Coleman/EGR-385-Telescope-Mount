@@ -70,6 +70,9 @@ class Mount:
         self.__offset_x = offset_x
         self.__offset_y = offset_y
 
+    def set_mag_declination(self, declination: float):
+        self.__magnetic_declination = declination
+
     def level_altitude(self):
         acceleration = self.__accelerometer.acceleration
         altitude = get_altitude_from_accelerometer(acceleration)

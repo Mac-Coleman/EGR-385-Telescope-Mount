@@ -13,6 +13,8 @@ from typing import Any, Optional, Union, Tuple, List, Callable
 from adafruit_seesaw import seesaw, digitalio, rotaryio
 from datetime import datetime, timezone
 
+import magnetismi.magnetismi as magnetic_api
+
 
 
 class Interface:
@@ -107,9 +109,18 @@ class Interface:
         la = lat.sign * (lat.deg + lat.min/60 + lat.sec/(60*60))
         lo = lon.sign * (lon.deg + lon.min / 60 + lon.sec / (60 * 60))
 
-        mag_declination = get_bearing_angle((la, lo), consts.MAGNETIC_NORTH_2024)
+        model = magnetic_api.Model(utc_time.year)
+        date = magnetic_api.dti.date(utc_time.year, utc_time.month, utc_time.day)
+        point = model.at(lat_dd=la, lon_dd=lo, alt_ft=gps_coords[2] * consts.METERS_TO_FEET)
+        mag_declination = point.dec
 
-        self.yes_or_no(f"Magnetic dec. found: {mag_declination:.2f}{chr(223)}. Use?")
+        use_calculated_declination = self.yes_or_no(f"Magnetic dec. found: {mag_declination:.2f}{chr(223)}. Use?")
+
+        if not use_calculated_declination:
+            md = self.dms_selection("Choose mag. dec...", DMS(angle=mag_declination))
+            mag_declination = md.sign * (md.deg + md.min/60.0 + md.sec/(60*60))
+
+        self.__mount.set_mag_declination(mag_declination)
 
     def yes_or_no(self, question: str):
         self.__lcd.lcd_clear()
