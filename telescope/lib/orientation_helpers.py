@@ -35,7 +35,7 @@ def signed_angle2(a: Vector2) -> float:
 
 def get_heading_from_magnetometer(magnetometer_reading: Vector3) -> float:
     # Return compass heading for now
-    flattened_reading = (magnetometer_reading[1], magnetometer_reading[0])
+    flattened_reading = (magnetometer_reading[1], -magnetometer_reading[0])
     return signed_angle2(flattened_reading)
 
 
