@@ -36,6 +36,7 @@ class Mount:
         self.__setpoint = (0.0, 0.0)  # Azimuth, Altitude Setpoint
         self.__offset_x = 0
         self.__offset_y = 0
+        self.__magnetic_declination = 0
 
     def poll_gps(self):
         self.__gps.update()

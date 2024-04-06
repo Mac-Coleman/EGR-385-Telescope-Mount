@@ -3,6 +3,7 @@ from telescope.mount import Mount
 
 from telescope import consts
 from telescope.lib.angles import DMS, HMS
+from telescope.lib.orientation_helpers import get_bearing_angle
 
 import time
 import textwrap
@@ -99,6 +100,16 @@ class Interface:
 
         while not self.yes_or_no(question):
             gps_coords = self.specify_coordinates()
+
+        lat = gps_coords[0]
+        lon = gps_coords[1]
+
+        la = lat.sign * (lat.deg + lat.min/60 + lat.sec/(60*60))
+        lo = lon.sign * (lon.deg + lon.min / 60 + lon.sec / (60 * 60))
+
+        mag_declination = get_bearing_angle((la, lo), consts.TRUE_NORTH)
+
+        self.yes_or_no(f"Magnetic dec. found: {mag_declination:.2f}{chr(223)}. Use?")
 
     def yes_or_no(self, question: str):
         self.__lcd.lcd_clear()
@@ -439,6 +450,8 @@ class Interface:
         self.__mount.stop()
 
         return use_offset
+
+
 
     def update(self):
         pass
