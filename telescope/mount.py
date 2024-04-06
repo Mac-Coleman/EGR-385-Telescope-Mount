@@ -88,6 +88,9 @@ class Mount:
     def spin_azimuth(self, speed):
         self.__az_motor.set_speed(speed)
 
+    def spin_altitude(self, speed):
+        self.__al_motor.set_speed(speed)
+
     def update(self):
         # Take care of telescope tasks
         # For now we will just print the heading and altitude

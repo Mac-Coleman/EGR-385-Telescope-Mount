@@ -376,6 +376,22 @@ class Interface:
         while not self.__mount.level_altitude():
             self.__lcd.lcd_display_string((f"{self.__mount.get_altitude():.1f}" + chr(223)).center(20), 3)
 
+        self.__lcd.lcd_clear()
+
+        while not self.select_pressed():
+            direction = 1 if self.up_pressed() else None
+            direction = -1 if self.down_pressed() else direction
+
+            if direction is not None:
+                self.__mount.spin_altitude(direction * 300)
+            else:
+                self.__mount.stop()
+
+            self.__lcd.lcd_display_string("Use UP/DOWN to level".center(20), 1)
+            self.__lcd.lcd_display_string("the telescope.".center(20), 2)
+            self.__lcd.lcd_display_string((f"{self.__mount.get_altitude():.1f}" + chr(223)).center(20), 3)
+            self.__lcd.lcd_display_string("SELECT when ready".center(20), 4)
+
     def calibrate_magnetometer(self):
         self.lcd_three_line_message("Press SELECT when the telescope has fully rotated.")
         self.__lcd.lcd_clear()
