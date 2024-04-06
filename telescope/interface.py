@@ -436,6 +436,8 @@ class Interface:
             self.__mount.spin_azimuth(i)
             time.sleep(0.005)
 
+        self.__mount.stop()
+
         return use_offset
 
     def update(self):
