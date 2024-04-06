@@ -34,13 +34,14 @@ class StepperMotor:
         return not condition
 
     def set_speed(self, speed):
-        if speed > self.__max_speed:
+        abs_speed = abs(speed)
+        if abs_speed > self.__max_speed:
             raise ValueError(f"Speed too high: {speed}")
 
         direction = False if speed > 0.0 else True
         GPIO.output(self.__pin_dir, direction)
 
-        self.__driver.change_frequency(speed)
+        self.__driver.change_frequency(abs_speed)
         self.__driver.start(DUTY_CYCLE)
 
     def stop(self):
