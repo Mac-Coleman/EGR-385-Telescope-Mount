@@ -27,6 +27,8 @@ def main(az_pwm, al_pwm, accel):
 
         acceleration = accel.acceleration
         print("Al: ", get_altitude_from_accelerometer(acceleration))
+        print("AL dir:", al_direction)
+        print("AZ dir:", az_direction)
 
         if az_direction is not None:
             GPIO.output(az_dir_pin, az_direction)
