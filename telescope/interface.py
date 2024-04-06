@@ -3,7 +3,7 @@ from telescope.mount import Mount
 
 from telescope import consts
 from telescope.lib.angles import DMS, HMS
-from telescope.lib.cache_helper import cache_magnetometer_offsets, get_cached_magnetometer_offsets
+from telescope.lib.cache_helper import cache_magnetometer_offsets, get_cached_magnetometer_offsets, cache_path
 
 import time
 import textwrap
@@ -132,6 +132,39 @@ class Interface:
         test_az = self.yes_or_no("Test azimuth / orientation?")
         if test_az:
             self.test_azimuth()
+
+        from skyfield.api import Star, Loader, wgs84
+
+        p = cache_path() / "skyfield"
+        p.mkdir(parents=True, exist_ok=True)
+
+        load = Loader(p)
+        planets = load('de421.bsp')
+        earth = planets(["earth"])
+
+        polaris = Star(ra_hours=(2, 31, 49.09), dec_degrees=(89, 15, 50.8))
+
+        ts = load.timescale()
+        location = earth + wgs84.latlon(la, lo)
+
+        update_count = 0
+        while True:
+            t = ts.now()
+
+            apparent = location.at(t).observe(polaris).apparent()
+            alt, az, dist = apparent.altaz()
+
+            self.__mount.set_setpoint(alt.degrees, az.degrees)
+            self.__mount.go_to_setpoint()
+            update_count += 1
+
+            if update_count % 50 == 0:
+                self.__lcd.lcd_display_string("Polaris".center(20), 1)
+                self.__lcd.lcd_display_string(f"AL: {alt.dstr()}", 2)
+                self.__lcd.lcd_display_string(f"AZ: {az.dstr()}", 3)
+                self.__lcd.lcd_display_string(f"Distance: {str(dist).rjust(10)}", 4)
+
+
 
     def yes_or_no(self, question: str):
         self.__lcd.lcd_clear()
