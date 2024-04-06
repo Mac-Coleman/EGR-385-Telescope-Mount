@@ -31,8 +31,8 @@ class StepperMotor:
         if out_of_range:
             speed = self.__max_speed * (1 if error > 0 else -1)
 
-        if abs(error) <= 2:
-            speed *= abs(error)/2
+        if abs(error) <= 20:
+            speed *= abs(error)/20
 
         self.set_speed(speed)
 
