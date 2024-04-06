@@ -140,7 +140,7 @@ class Interface:
 
         load = Loader(p)
         planets = load('de421.bsp')
-        earth = planets(["earth"])
+        earth = planets["earth"]
 
         polaris = Star(ra_hours=(2, 31, 49.09), dec_degrees=(89, 15, 50.8))
 
