@@ -365,7 +365,7 @@ class Interface:
 
             for i in range(window, min(window + 3, len(options))):
                 s = ">" if i == selection else " "
-                if i == len(options) - 1:
+                if i == len(options) - 1 and exitable:
                     s += options[i][0].center(20 - len(s))
                 else:
                     s += str(i) + "."
@@ -373,7 +373,7 @@ class Interface:
                 self.__lcd.lcd_display_string(s, i-window+2)
 
             if self.select_pressed() or self.right_pressed():
-                if selection == len(options) - 1:
+                if selection == len(options) - 1 and exitable:
                     return None
                 return options[selection][1](*options[selection][2])
 
