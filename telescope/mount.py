@@ -34,6 +34,8 @@ class Mount:
         self.__al_motor = StepperMotor(consts.AL_PWM_CHANNEL, consts.AL_DIR_PIN, consts.AL_MAX_SPEED, consts.AZ_MAX_ACCELERATION)
 
         self.__setpoint = (0.0, 0.0)  # Azimuth, Altitude Setpoint
+        self.__offset_x = 0
+        self.__offset_y = 0
 
     def poll_gps(self):
         self.__gps.update()
@@ -58,7 +60,14 @@ class Mount:
         return self.__magnetometer.magnetic
 
     def get_heading(self):
-        pass
+        x, y, z = self.__magnetometer.magnetic
+        x -= self.__offset_x
+        y -= self.__offset_y
+        return get_heading_from_magnetometer((x, y, z))
+
+    def set_offsets(self, offset_x, offset_y):
+        self.__offset_x = offset_x
+        self.__offset_y = offset_y
 
     def level_altitude(self):
         acceleration = self.__accelerometer.acceleration

@@ -376,6 +376,7 @@ class Interface:
             max_x = max(mag_x, max_x)
             max_y = max(mag_y, max_y)
             max_z = max(mag_z, max_z)
+            time.sleep(0.1)
 
         while True:
             self.__mount.spin_azimuth(AZ_MAX_SPEED)
@@ -402,10 +403,40 @@ class Interface:
             if self.select_pressed():
                 break
 
+        for i in range(AZ_MAX_SPEED, 10, -10):
+            self.__mount.spin_azimuth(i)
+            time.sleep(0.1)
+
         self.__mount.stop()
         use_offset = self.yes_or_no(f"Offset found: X={offset_x:.2f}, Y={offset_y:.2f}. Use?")
-        if not use_offset:
-            self.error("Error: Did not calibrate.")
+
+        if use_offset:
+            self.__mount.set_offsets(offset_x, offset_y)
+
+        self.__lcd.lcd_clear()
+        self.__lcd.lcd_display_string("Testing orientation".center(20), 2)
+
+        for i in range(10, AZ_MAX_SPEED+1, 10):
+            self.__mount.spin_azimuth(i)
+            time.sleep(0.1)
+
+        self.__lcd.lcd_clear()
+
+        while True:
+            self.__mount.spin_azimuth(AZ_MAX_SPEED)
+            h = self.__mount.get_heading()
+            self.__lcd.lcd_display_string("Heading:".center(20), 2)
+            self.__lcd.lcd_display_string(f"{h:.1f}{chr(223)}".center(20), 3)
+            time.sleep(0.1)
+
+            if self.select_pressed():
+                break
+
+        for i in range(AZ_MAX_SPEED, 10, -10):
+            self.__mount.spin_azimuth(i)
+            time.sleep(0.1)
+
+        return use_offset
 
     def update(self):
         pass
