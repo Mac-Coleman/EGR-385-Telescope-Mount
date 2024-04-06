@@ -107,7 +107,7 @@ class Interface:
         la = lat.sign * (lat.deg + lat.min/60 + lat.sec/(60*60))
         lo = lon.sign * (lon.deg + lon.min / 60 + lon.sec / (60 * 60))
 
-        mag_declination = get_bearing_angle((la, lo), consts.TRUE_NORTH)
+        mag_declination = get_bearing_angle((la, lo), consts.MAGNETIC_NORTH_2024)
 
         self.yes_or_no(f"Magnetic dec. found: {mag_declination:.2f}{chr(223)}. Use?")
 

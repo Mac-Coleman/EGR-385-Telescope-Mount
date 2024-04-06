@@ -28,7 +28,11 @@ def get_bearing_angle(point_a: Vector2, point_b: Vector2) -> float:
     a = point_a[0] * math.pi / 180.0, point_a[1] * math.pi / 180.0
     b = point_b[0] * math.pi / 180.0, point_b[1] * math.pi / 180.0
     delta_longitude = b[1] - a[1]
+    print(delta_longitude)
     x = math.cos(b[0]) * math.sin(delta_longitude)
+    print(x)
     y = math.cos(a[0]) * math.sin(b[0]) - math.sin(a[0]) * math.cos(b[0]) * math.cos(delta_longitude)
-    h = math.atan2(y, x) * 180 / math.pi
+    print(y)
+    h = math.atan2(x, y) * 180 / math.pi
+    print(h)
     return h

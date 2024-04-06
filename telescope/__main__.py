@@ -5,6 +5,7 @@ from telescope.mount import Mount
 
 import time
 import board
+import traceback
 from adafruit_seesaw import seesaw, digitalio
 from rpi_hardware_pwm import HardwarePWM
 import RPi.GPIO as GPIO
