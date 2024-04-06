@@ -142,7 +142,7 @@ class Interface:
         planets = load('de421.bsp')
         earth = planets["earth"]
 
-        vega = Star(ra_hours=(18, 36, 56.33635), dec_degrees=(38, 47, 01.2802))
+        object = planets["sun"]  # Star(ra_hours=(18, 36, 56.33635), dec_degrees=(38, 47, 01.2802))
 
         ts = load.timescale()
         location = earth + wgs84.latlon(la, lo)
@@ -151,7 +151,7 @@ class Interface:
         while True:
             t = ts.now()
 
-            apparent = location.at(t).observe(vega).apparent()
+            apparent = location.at(t).observe(object).apparent()
             alt, az, dist = apparent.altaz()
 
             self.__mount.set_setpoint(alt.degrees, az.degrees)
