@@ -3,6 +3,7 @@
 
 from rpi_hardware_pwm import HardwarePWM
 import RPi.GPIO as GPIO
+from telescope.consts import DUTY_CYCLE
 
 
 class StepperMotor:
@@ -11,6 +12,7 @@ class StepperMotor:
         self.__driver.stop()
 
         self.__pin_dir = pin_dir
+        self.__min_speed = min_speed
         self.__max_speed = max_speed
         self.__max_acceleration = max_acceleration
 
@@ -25,8 +27,19 @@ class StepperMotor:
 
         if condition:
             self.__driver.change_frequency(self.__max_speed)
-            self.__driver.start(50)
+            self.__driver.start(DUTY_CYCLE)
         else:
             self.__driver.stop()
 
         return not condition
+
+    def set_speed(self, speed):
+        if speed > self.__max_speed:
+            raise ValueError(f"Speed too high: {speed}")
+
+        self.__driver.change_frequency(speed)
+        self.__driver.start(DUTY_CYCLE)
+
+    def stop(self):
+        self.__driver.change_frequency(self.__min_speed)
+        self.__driver.stop()

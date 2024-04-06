@@ -28,3 +28,5 @@ AL_DIR_PIN = 23
 AL_PWM_CHANNEL = 0  # GPIO 18
 AL_MAX_SPEED = 2000  # Pulses per second
 AL_MAX_ACCELERATION = 1000  # Pulses per second squared
+
+DUTY_CYCLE = 50
