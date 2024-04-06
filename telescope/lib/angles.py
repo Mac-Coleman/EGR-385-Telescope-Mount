@@ -11,7 +11,7 @@ class DMS:
             if signed_angle >= 0:
                 self.sign = 1
             else:
-                self.sign = 0
+                self.sign = -1
             self.deg = round(abs(signed_angle))
             m = (signed_angle % 1) * 60 # This feels sketchy
             self.min = round(m)
