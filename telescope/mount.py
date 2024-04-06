@@ -54,10 +54,23 @@ class Mount:
     def get_altitude(self):
         return get_altitude_from_accelerometer(self.__accelerometer.acceleration)
 
+    def get_magnetic(self):
+        return self.__magnetometer.magnetic
+
+    def get_heading(self):
+        pass
+
     def level_altitude(self):
         acceleration = self.__accelerometer.acceleration
         altitude = get_altitude_from_accelerometer(acceleration)
         return self.__al_motor.run(altitude, 0)
+
+    def stop(self):
+        self.__az_motor.stop()
+        self.__al_motor.stop()
+
+    def spin_azimuth(self, speed):
+        self.__az_motor.set_speed(speed)
 
     def update(self):
         # Take care of telescope tasks

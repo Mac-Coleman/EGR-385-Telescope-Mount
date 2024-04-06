@@ -82,13 +82,7 @@ class Interface:
         skip_calibrate = self.yes_or_no("Calibration found. Use calib data?")
 
         if not skip_calibrate:
-
-            self.__lcd.lcd_clear()
-            self.__lcd.lcd_display_string("Calibrating".center(20), 1)
-            self.__lcd.lcd_display_string("Magnetometer...".center(20), 2)
-            self.__lcd.lcd_display_string("Please wait".center(20), 4)
-
-            time.sleep(5)
+            self.calibrate_magnetometer()
 
         utc_time = self.get_gps_time()
         if utc_time is None:
@@ -357,6 +351,61 @@ class Interface:
 
         while not self.__mount.level_altitude():
             self.__lcd.lcd_display_string((f"{self.__mount.get_altitude():.1f}" + chr(223)).center(20), 3)
+
+    def calibrate_magnetometer(self):
+        self.lcd_three_line_message("Press SELECT when the telescope has fully rotated.")
+        self.__lcd.lcd_clear()
+        self.__lcd.lcd_display_string("Calibrating".center(20), 2)
+
+        mag_x, mag_y, mag_z = self.__mount.get_magnetic()
+        max_x = min_x = mag_x
+        max_y = min_y = mag_y
+        max_z = min_z = mag_z
+
+        offset_x = (max_x + min_x) / 2
+        offset_y = (max_y + min_y) / 2
+        offset_z = (max_z + min_z) / 2
+
+        from telescope.consts import AZ_MAX_SPEED
+        for i in range(10, AZ_MAX_SPEED+1, 10):
+            self.__mount.spin_azimuth(i)
+            mag_x, mag_y, mag_z = self.__mount.get_magnetic()
+            min_x = min(mag_x, min_x)
+            min_y = min(mag_y, min_y)
+            min_z = min(mag_z, min_z)
+            max_x = max(mag_x, max_x)
+            max_y = max(mag_y, max_y)
+            max_z = max(mag_z, max_z)
+
+        while True:
+            self.__mount.spin_azimuth(AZ_MAX_SPEED)
+            mag_x, mag_y, mag_z = self.__mount.get_magnetic()
+            min_x = min(mag_x, min_x)
+            min_y = min(mag_y, min_y)
+            min_z = min(mag_z, min_z)
+            max_x = max(mag_x, max_x)
+            max_y = max(mag_y, max_y)
+            max_z = max(mag_z, max_z)
+
+            offset_x = (max_x + min_x) / 2
+            offset_y = (max_y + min_y) / 2
+            offset_z = (max_z + min_z) / 2
+
+            field_x = (max_x - min_x) / 2
+            field_y = (max_y - min_y) / 2
+            field_z = (max_z - min_z) / 2
+
+            self.__lcd.lcd_display_string("Calibrating...".center(20), 1)
+            self.__lcd.lcd_display_string(f"X: {offset_x:.2f}".center(20), 3)
+            self.__lcd.lcd_display_string(f"Y: {offset_y:.2f}".center(20), 4)
+
+            if self.select_pressed():
+                break
+
+        self.__mount.stop()
+        use_offset = self.yes_or_no(f"Offset found: X={offset_x:.2f}, Y={offset_y:.2f}. Use?")
+        if not use_offset:
+            self.error("Error: Did not calibrate.")
 
     def update(self):
         pass
