@@ -356,7 +356,7 @@ class Interface:
         self.__lcd.lcd_display_string("Please wait".center(20), 4)
 
         while not self.__mount.level_altitude():
-            self.__lcd.lcd_display_string(f"{self.__mount.get_altitude():.1f}" + chr(223), 3)
+            self.__lcd.lcd_display_string((f"{self.__mount.get_altitude():.1f}" + chr(223)).center(20), 3)
 
     def update(self):
         pass

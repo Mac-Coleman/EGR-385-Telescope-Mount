@@ -25,7 +25,7 @@ class StepperMotor:
 
         if condition:
             self.__driver.change_frequency(self.__max_speed)
-            self.__driver.start(0.5)
+            self.__driver.start(50)
         else:
             self.__driver.stop()
 
