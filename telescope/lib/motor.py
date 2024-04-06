@@ -24,8 +24,8 @@ class StepperMotor:
         condition = abs(setpoint - sensor_value) > tolerance
 
         if condition:
-            self.__driver.change_frequency(10)
-            self.__driver.start(50)
+            self.__driver.change_frequency(self.__max_speed)
+            self.__driver.start(0.5)
         else:
             self.__driver.stop()
 
