@@ -7,7 +7,7 @@ from telescope.consts import DUTY_CYCLE
 
 
 class StepperMotor:
-    def __init__(self, pwm_channel, pin_dir, max_speed, max_acceleration, min_speed=10):
+    def __init__(self, pwm_channel, pin_dir, max_speed, max_acceleration, min_speed=0.1):
         self.__driver = HardwarePWM(pwm_channel=pwm_channel, hz=min_speed)
         self.__driver.stop()
 

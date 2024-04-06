@@ -3,7 +3,7 @@ from telescope.mount import Mount
 
 from telescope import consts
 from telescope.lib.angles import DMS, HMS
-from telescope.lib.orientation_helpers import get_bearing_angle
+from telescope.lib.cache_helper import cache_magnetometer_offsets, get_cached_magnetometer_offsets
 
 import time
 import textwrap
@@ -80,10 +80,19 @@ class Interface:
         if not leveled:
             self.error("Error: Control Failure. Debug required.")
 
-        skip_calibrate = self.yes_or_no("Calibration found. Use calib data?")
+        offsets = get_cached_magnetometer_offsets()
+        skip_calibrate = False
+
+        if offsets is not None:
+            skip_calibrate = self.yes_or_no("Calibration found. Use calib data?")
 
         if not skip_calibrate:
-            self.calibrate_magnetometer()
+            offsets = self.calibrate_magnetometer()
+            while offsets is None:
+                offsets = self.calibrate_magnetometer()
+            cache_magnetometer_offsets(offsets[0], offsets[1])
+
+        self.__mount.set_offsets(offsets[0], offsets[1])
 
         utc_time = self.get_gps_time()
         if utc_time is None:
@@ -450,10 +459,7 @@ class Interface:
         self.__mount.stop()
         use_offset = self.yes_or_no(f"Offset found: X={offset_x:.2f}, Y={offset_y:.2f}. Use?")
 
-        if use_offset:
-            self.__mount.set_offsets(offset_x, offset_y)
-
-        return use_offset
+        return offset_x, offset_y if use_offset else None
 
     def test_azimuth(self):
         self.__lcd.lcd_clear()

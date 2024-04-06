@@ -33,9 +33,11 @@ class Mount:
         self.__az_motor = StepperMotor(consts.AZ_PWM_CHANNEL, consts.AZ_DIR_PIN, consts.AZ_MAX_SPEED, consts.AZ_MAX_ACCELERATION)
         self.__al_motor = StepperMotor(consts.AL_PWM_CHANNEL, consts.AL_DIR_PIN, consts.AL_MAX_SPEED, consts.AZ_MAX_ACCELERATION)
 
-        self.__setpoint = (0.0, 0.0)  # Azimuth, Altitude Setpoint
+        self.__setpoint_altitude = 0.0
+        self.__setpoint_azimuth = 0.0
         self.__offset_x = 0
         self.__offset_y = 0
+        self.__altitude_offset = 0.0
         self.__magnetic_declination = 0
 
     def poll_gps(self):
@@ -55,7 +57,7 @@ class Mount:
         )
 
     def get_altitude(self):
-        return get_altitude_from_accelerometer(self.__accelerometer.acceleration)
+        return get_altitude_from_accelerometer(self.__accelerometer.acceleration) - self.__altitude_offset
 
     def get_azimuth(self):
         return self.get_heading() - self.__magnetic_declination
@@ -76,6 +78,9 @@ class Mount:
     def set_mag_declination(self, declination: float):
         self.__magnetic_declination = declination
 
+    def set_altitude_offset(self, offset: float):
+        self.__altitude_offset = offset
+
     def level_altitude(self):
         acceleration = self.__accelerometer.acceleration
         altitude = get_altitude_from_accelerometer(acceleration)
@@ -91,8 +96,17 @@ class Mount:
     def spin_altitude(self, speed):
         self.__al_motor.set_speed(speed)
 
-    def update(self):
+    def set_setpoint(self, altitude: float, azimuth: float):
+        if altitude < 10:
+            raise ValueError("Attempted to point telescope significantly below the horizon!")
+        if altitude > 89:
+            raise ValueError("Attempted to point telescope near the zenith singularity!")
+        self.__setpoint_altitude = altitude
+        self.__setpoint_azimuth = azimuth
+
+    def go_to_setpoint(self):
         # Take care of telescope tasks
         # For now we will just print the heading and altitude
 
-        pass
+        self.__al_motor.run(self.get_altitude(), self.__setpoint_altitude)
+        self.__az_motor.run(self.get_azimuth(), self.__setpoint_azimuth)
