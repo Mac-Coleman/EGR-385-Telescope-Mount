@@ -23,7 +23,7 @@ cursor.execute("CREATE TABLE solarsystem_objects("
 de421 = [
     ["Mercury", "Mercury"],
     ["Venus", "Venus"],
-    ["Earth", "Earth"],
+    # ["Earth", "Earth"],
     ["Moon", "The Moon"],
     ["Mars", "Mars"],
     ["Jupiter Barycenter", "Jupiter"],
