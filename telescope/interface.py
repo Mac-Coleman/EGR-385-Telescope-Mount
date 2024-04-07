@@ -640,7 +640,7 @@ class Interface:
 
         stars = self.__database_cursor.execute(query)
 
-        actions = [[star[2], None, [star[0], star[1], star[2], star[3], star[4]]] for star in stars]
+        actions = [[star[2], self.display_star, [star[0], star[1], star[2], star[3], star[4]]] for star in stars]
 
         title = "Stars"
 
@@ -657,7 +657,7 @@ class Interface:
 
         ms = self.__database_cursor.execute(query)
 
-        actions = [[m[3], None, [m[0], m[1], m[3], m[4], m[5]]] for m in ms]
+        actions = [[m[3], self.display_messier, [m[0], m[1], m[3], m[4], m[5]]] for m in ms]
 
         title = "Messier Objects"
 
