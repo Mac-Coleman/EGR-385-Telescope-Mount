@@ -739,6 +739,8 @@ class Interface:
 
         c = 0
 
+        released = not self.select_pressed()
+
         while True:
             t = self.__timescale.now()
             apparent = self.__location.at(t).observe(s).apparent()
@@ -747,7 +749,10 @@ class Interface:
             self.__mount.set_setpoint(alt.degrees, az.degrees)
             self.__mount.go_to_setpoint()
 
-            if self.select_pressed() or self.left_pressed():
+            if not self.select_pressed():
+                released = True
+
+            if released and self.select_pressed() or self.left_pressed():
                 break
 
 
@@ -758,6 +763,8 @@ class Interface:
                 self.__lcd.lcd_display_string("SELECT to stop".center(20), 4)
 
             c += 1
+
+        self.__mount.stop()
 
 
 
