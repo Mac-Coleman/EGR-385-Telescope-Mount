@@ -41,7 +41,7 @@ class Interface:
         self.__wheel_up = digitalio.DigitalIO(self.__wheel, 2)
         self.__wheel_left = digitalio.DigitalIO(self.__wheel, 3)
         self.__wheel_down = digitalio.DigitalIO(self.__wheel, 4)
-        self.__wheel_right = digitalio.DigitalIO(self.__wheel, 1)
+        self.__wheel_right = digitalio.DigitalIO(self.__wheel, 5)
 
         self.__wheel_encoder = rotaryio.IncrementalEncoder(self.__wheel)
 
