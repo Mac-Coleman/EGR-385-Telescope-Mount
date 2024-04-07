@@ -749,6 +749,8 @@ class Interface:
             self.__mount.set_setpoint(alt.degrees, az.degrees)
             self.__mount.go_to_setpoint()
 
+            print("AL", alt.degrees, "AZ", az.degrees)
+
             if not self.select_pressed():
                 released = True
 
@@ -759,7 +761,7 @@ class Interface:
             if c % 50 == 0:
                 self.__lcd.lcd_display_string(name.center(20), 1)
                 self.__lcd.lcd_display_string(f"AL: {DMS(angle=alt.degrees)}", 2)
-                self.__lcd.lcd_display_string(f"AZ: {DMS(angle=az.degrees)}", 3)
+                self.__lcd.lcd_display_string(f"AZ: {DMS(angle=az.degrees, limit=360)}", 3)
                 self.__lcd.lcd_display_string("SELECT to stop".center(20), 4)
 
             c += 1
