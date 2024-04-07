@@ -1,5 +1,4 @@
 import sqlite3
-import pandas
 from skyfield.api import Loader
 from telescope.lib.cache_helper import cache_path
 
@@ -55,8 +54,6 @@ cursor.execute("CREATE TABLE messier_objects("
                "dec REAL,"
                "dist REAL)")
 
-df = pandas.read_csv("./data_sources/messier_catalog.tsv", sep="\t")
-
 
 def parse_ra(ra):
     s = ra.split("h")
@@ -74,24 +71,26 @@ def parse_dec(dec):
     return deg + m * (-1.0 if is_negative else 1.0)
 
 
-for index, row in df.iterrows():
-    favorited = False
-    m = row["M"]
-    alt_name = row["NGC"] if "NGC" not in row["NGC"] else ' '.join(row["NGC"].split(' ')[2:])
+with open("./data_sources/messier_catalog.tsv") as f:
+    rows = [row.split('\t') for row in f.read().split('\n')[1:]]
+    for row in rows:
+        favorited = False
+        m = row[0]
+        alt_name = row[1] if "NGC" not in row[1] else ' '.join(row[1].split(' ')[2:])
 
-    if alt_name == '':
-        alt_name = f"Messier {m[1:]}"
+        if alt_name == '':
+            alt_name = f"Messier {m[1:]}"
 
-    ra = parse_ra(row["RA"])
-    dec = parse_dec(row["DEC"])
-    dist = float(row["DIST (ly)"].replace(",", ""))
+        ra = parse_ra(row[4])
+        dec = parse_dec(row[5])
+        dist = float(row[8].replace(",", ""))
 
-    data = (favorited, m, alt_name, ra, dec, dist)
+        data = (favorited, m, alt_name, ra, dec, dist)
 
-    cursor.execute(
-        "INSERT INTO messier_objects (favorite, m, alt_name, ra, dec, dist) " \
-        "VALUES (?, ?, ?, ?, ?, ?)",
-        data)
+        cursor.execute(
+            "INSERT INTO messier_objects (favorite, m, alt_name, ra, dec, dist) " \
+            "VALUES (?, ?, ?, ?, ?, ?)",
+            data)
 
 connection.commit()
 
@@ -106,20 +105,20 @@ cursor.execute("CREATE TABLE stars("
                "ra REAL,"
                "dec REAL)")
 
-df = pandas.read_csv("./data_sources/IAU-CSN.tsv", sep="\t")
+with open("./data_sources/IAU-CSN.tsv") as f:
+    rows = [row.split('\t') for row in f.read().split('\n')[1:-1]]
+    for row in rows:
+        print(row)
+        favorited = False
+        name = row[0]
+        ra = row[12]
+        dec = row[13]
 
+        data = (favorited, name, ra, dec)
 
-for index, row in df.iterrows():
-    favorited = False
-    name = row["Name/ASCII"]
-    ra = row["RA(J2000)"]
-    dec = row["Dec(J2000)"]
-
-    data = (favorited, name, ra, dec)
-
-    cursor.execute(
-        "INSERT INTO stars (favorite, name, ra, dec) "
-        "VALUES (?, ?, ?, ?)",
-        data)
+        cursor.execute(
+            "INSERT INTO stars (favorite, name, ra, dec) "
+            "VALUES (?, ?, ?, ?)",
+            data)
 
 connection.commit()

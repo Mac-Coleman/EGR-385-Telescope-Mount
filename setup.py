@@ -15,7 +15,6 @@ setup(
         "adafruit-circuitpython-mmc56x3",
         "adafruit-circuitpython-adxl34x",
         "adafruit-circuitpython-seesaw",
-        "pandas",
         "magnetismi",
         "smbus2",
         "skyfield",
