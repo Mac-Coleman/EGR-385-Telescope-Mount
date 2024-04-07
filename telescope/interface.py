@@ -744,7 +744,7 @@ class Interface:
             apparent = self.__location.at(t).observe(s).apparent()
             alt, az, dist = apparent.altaz()
 
-            self.__mount.set_setpoint(alt, az)
+            self.__mount.set_setpoint(alt.degrees, az.degrees)
             self.__mount.go_to_setpoint()
 
             if self.select_pressed() or self.left_pressed():
