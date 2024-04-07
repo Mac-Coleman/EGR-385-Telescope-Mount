@@ -57,6 +57,7 @@ class Interface:
 
         self.__wgs84 = wgs84.latlon(self.__latitude_degrees, self.__longitude_degrees, self.__altitude_meters)
         self.__location = self.__planets["earth"] + self.__wgs84
+        self.__timescale = self.__skyfield_loader.timescale()
 
         self.__database_connection = sqlite3.connect(cache_path() / "targets.db")
         self.__database_cursor = self.__database_connection.cursor()
@@ -375,6 +376,9 @@ class Interface:
                     s += options[i][0].rjust(20 - len(s))
                 self.__lcd.lcd_display_string(s, i-window+2)
 
+            if self.left_pressed() and exitable:
+                return None
+
             if self.select_pressed() or self.right_pressed():
                 if selection == len(options) - 1 and exitable:
                     return None
@@ -604,7 +608,7 @@ class Interface:
         actions = [
             ["Planets", self.display_planets, [favorites_only]],
             ["Stars", self.display_stars, [favorites_only]],
-            ["Messier", self.display_messier, [favorites_only]],
+            ["Messier", self.display_messiers, [favorites_only]],
             ["Satellites", None, [favorites_only]],
         ]
 
@@ -619,7 +623,7 @@ class Interface:
 
         planets = self.__database_cursor.execute(query)
 
-        actions = [[planet[2], None, [planet[3]]] for planet in planets]
+        actions = [[planet[2], None, [planet[0], planet[1], planet[3]]] for planet in planets]
 
         title = "Planets"
 
@@ -636,7 +640,7 @@ class Interface:
 
         stars = self.__database_cursor.execute(query)
 
-        actions = [[star[2], None, [star[3], star[4]]] for star in stars]
+        actions = [[star[2], None, [star[0], star[1], star[2], star[3], star[4]]] for star in stars]
 
         title = "Stars"
 
@@ -645,7 +649,7 @@ class Interface:
 
         return self.choose_from_list(title, actions, True)
 
-    def display_messier(self, favorites_only):
+    def display_messiers(self, favorites_only):
         query = consts.ALL_MESSIER
 
         if favorites_only:
@@ -653,7 +657,7 @@ class Interface:
 
         ms = self.__database_cursor.execute(query)
 
-        actions = [[m[3], None, [m[4], m[5], m[6]]] for m in ms]
+        actions = [[m[3], None, [m[0], m[1], m[3], m[4], m[5]]] for m in ms]
 
         title = "Messier Objects"
 
@@ -662,19 +666,27 @@ class Interface:
 
         return self.choose_from_list(title, actions, True)
 
-    def display_objects(self, favorites_only, database):
-        queries = {
-            (False, "Planets"): consts.ALL_PLANETS,
-            (True, "Planets"): consts.FAVORITE_PLANETS,
-            (False, "Stars"): consts.ALL_STARS,
-            (True, "Stars"): consts.FAVORITE_STARS,
-            (False, "Messier"): consts.ALL_MESSIER,
-            (True, "Messier"): consts.FAVORITE_MESSIER,
-        }
+    def display_star(self, pk, favorite, name, ra, dec):
+        actions = [
+            ["Track", self.track_point, [name, ra, dec]],
+        ]
+        if favorite:
+            actions.append(["Unfavorite", None, [pk, favorite]])
+        else:
+            actions.append(["Favorite", None, [pk, favorite]])
 
-        query = queries[(favorites_only, database)]
+        return self.choose_from_list(name, actions, True)
 
+    def display_messier(self, pk, favorite, name, ra, dec):
+        actions = [
+            ["Track", self.track_point, [name, ra, dec]],
+        ]
+        if favorite:
+            actions.append(["Unfavorite", None, [pk, favorite]])
+        else:
+            actions.append(["Favorite", None, [pk, favorite]])
 
+        return self.choose_from_list(name, actions, True)
 
 
     def settings(self):
@@ -720,6 +732,34 @@ class Interface:
 
             if self.select_pressed():
                 break
+
+    def track_point(self, name, right_ascension, declination):
+        self.__lcd.lcd_clear()
+        s = Star(ra_hours=right_ascension, dec_degrees=declination)
+
+        c = 0
+
+        while True:
+            t = self.__timescale.now()
+            apparent = self.__location.at(t).observe(s).apparent()
+            alt, az, dist = apparent.altaz()
+
+            self.__mount.set_setpoint(alt, az)
+            self.__mount.go_to_setpoint()
+
+            if self.select_pressed() or self.left_pressed():
+                break
+
+
+            if c % 50 == 0:
+                self.__lcd.lcd_display_string(name.center(20), 1)
+                self.__lcd.lcd_display_string(f"AL: {DMS(angle=alt.dstr())}", 2)
+                self.__lcd.lcd_display_string(f"AZ: {DMS(angle=az.dstr())}", 3)
+                self.__lcd.lcd_display_string("SELECT to stop".center(20), 4)
+
+            c += 1
+
+
 
 
 
