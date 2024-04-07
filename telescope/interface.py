@@ -735,7 +735,9 @@ class Interface:
 
     def track_point(self, name, right_ascension, declination):
         self.__lcd.lcd_clear()
-        s = Star(ra_hours=right_ascension, dec_degrees=declination)
+        # Right ascension specified in degrees... convert to hours.
+        ra = (right_ascension/360) * 24
+        s = Star(ra_hours=ra, dec_degrees=declination)
 
         c = 0
 
