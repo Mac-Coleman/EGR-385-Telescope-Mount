@@ -8,7 +8,7 @@ from telescope.lib.cache_helper import cache_magnetometer_offsets, get_cached_ma
 import time
 import textwrap
 import sys
-from copy import deepcopy
+import sqlite3
 from typing import Any, Optional, Union, Tuple, List, Callable
 from adafruit_seesaw import seesaw, digitalio, rotaryio
 from datetime import datetime, timezone
@@ -57,6 +57,9 @@ class Interface:
 
         self.__wgs84 = wgs84.latlon(self.__latitude_degrees, self.__longitude_degrees, self.__altitude_meters)
         self.__location = self.__planets["earth"] + self.__wgs84
+
+        self.__database_connection = sqlite3.connect(cache_path() / "targets.db")
+        self.__database_cursor = self.__database_connection.cursor()
 
     def encoder_diff(self):
         pos = self.__wheel_encoder.position
@@ -599,14 +602,80 @@ class Interface:
 
     def all_objects(self, favorites_only):
         actions = [
-            ["Planets", None, [favorites_only]],
-            ["Stars", None, [favorites_only]],
-            ["Messier", None, [favorites_only]],
+            ["Planets", self.display_planets, [favorites_only]],
+            ["Stars", self.display_stars, [favorites_only]],
+            ["Messier", self.display_messier, [favorites_only]],
             ["Satellites", None, [favorites_only]],
         ]
 
         title = "Favorites" if favorites_only else "Type"
         return self.choose_from_list(title, actions, True)
+
+    def display_planets(self, favorites_only):
+        query = consts.ALL_PLANETS
+
+        if favorites_only:
+            query = consts.FAVORITE_PLANETS
+
+        planets = self.__database_cursor.execute(query)
+
+        actions = [[planet[2], None, [planet[3]]] for planet in planets]
+
+        title = "Planets"
+
+        if favorites_only:
+            title = "Favorite Planets"
+
+        return self.choose_from_list(title, actions, True)
+
+    def display_stars(self, favorites_only):
+        query = consts.ALL_STARS
+
+        if favorites_only:
+            query = consts.FAVORITE_STARS
+
+        stars = self.__database_cursor.execute(query)
+
+        actions = [[star[2], None, [star[3], star[4]]] for star in stars]
+
+        title = "Stars"
+
+        if favorites_only:
+            title = "Favorite Stars"
+
+        return self.choose_from_list(title, actions, True)
+
+    def display_messier(self, favorites_only):
+        query = consts.ALL_MESSIER
+
+        if favorites_only:
+            query = consts.FAVORITE_MESSIER
+
+        ms = self.__database_cursor.execute(query)
+
+        actions = [[m[3], None, [m[4], m[5], m[6]]] for m in ms]
+
+        title = "Messier Objects"
+
+        if favorites_only:
+            title = "Favorite Messier"
+
+        return self.choose_from_list(title, actions, True)
+
+    def display_objects(self, favorites_only, database):
+        queries = {
+            (False, "Planets"): consts.ALL_PLANETS,
+            (True, "Planets"): consts.FAVORITE_PLANETS,
+            (False, "Stars"): consts.ALL_STARS,
+            (True, "Stars"): consts.FAVORITE_STARS,
+            (False, "Messier"): consts.ALL_MESSIER,
+            (True, "Messier"): consts.FAVORITE_MESSIER,
+        }
+
+        query = queries[(favorites_only, database)]
+
+
+
 
     def settings(self):
         actions = [

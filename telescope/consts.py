@@ -33,3 +33,13 @@ AL_MAX_ACCELERATION = 1000  # Pulses per second squared
 AL_DIRECTION_SIGN = -1 # Pulsing while AL_DIR_PIN is low causes altitude to DECREASE
 
 DUTY_CYCLE = 50
+
+# SQLITE3 Stuff
+ALL_STARS = "SELECT * FROM stars"
+FAVORITE_STARS = "SELECT * FROM stars WHERE favorite = TRUE"
+
+ALL_MESSIER = "SELECT * FROM messier_objects"
+FAVORITE_MESSIER = "SELECT * FROM messier_objects WHERE favorite = TRUE"
+
+ALL_PLANETS = "SELECT * FROM solarsystem_objects"
+FAVORITE_PLANETS = "SELECT * FROM solarsystem_objects WHERE favorite = TRUE"
