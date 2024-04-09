@@ -106,8 +106,17 @@ class Mount:
 
     def go_to_setpoint(self):
         # Take care of telescope tasks
-        # For now we will just print the heading and altitude
+
+        cur_az = self.get_azimuth()
+        tar_az = self.__setpoint_azimuth
+
+        if tar_az <= 10:
+            cur_az += 360
+            tar_az += 360
+        elif tar_az > 350:
+            cur_az -= 360
+            tar_az -= 360
 
         al = self.__al_motor.run(self.get_altitude(), self.__setpoint_altitude)
-        az = self.__az_motor.run(self.get_azimuth(), self.__setpoint_azimuth)
+        az = self.__az_motor.run(cur_az, tar_az)
         return *al[1:], *az[1:]
