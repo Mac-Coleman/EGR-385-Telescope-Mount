@@ -18,6 +18,8 @@ def get_cached_magnetometer_offsets() -> Optional[Tuple[float, float]]:
             offsets = float(offsets_string[0]), float(offsets_string[1])
     except FileNotFoundError as e:
         print("No cached data found")
+    except ValueError as e:
+        print("Cache file found but could not be read")
 
     return offsets
 
