@@ -596,10 +596,10 @@ class Interface:
     def choose_main_action(self):
         actions = [
             ["Objects", self.all_objects, [False]],
-            ["Favorites", self.all_objects, [True]],
+            # ["Favorites", self.all_objects, [True]],
             ["Coordinates", None, []],
             ["Manual", self.manual, []],
-            ["Settings", self.settings, []]
+            # ["Settings", self.settings, []]
         ]
 
         return self.choose_from_list("Choose Action", actions, False)
@@ -609,7 +609,7 @@ class Interface:
             ["Planets", self.display_planets, [favorites_only]],
             ["Stars", self.display_stars, [favorites_only]],
             ["Messier", self.display_messiers, [favorites_only]],
-            ["Satellites", None, [favorites_only]],
+            # ["Satellites", None, [favorites_only]],
         ]
 
         title = "Favorites" if favorites_only else "Type"
@@ -623,7 +623,7 @@ class Interface:
 
         planets = self.__database_cursor.execute(query)
 
-        actions = [[planet[2], None, [planet[0], planet[1], planet[3]]] for planet in planets]
+        actions = [[planet[2], self.display_planet, [planet[0], planet[1], planet[2], planet[3]]] for planet in planets]
 
         title = "Planets"
 
@@ -670,10 +670,11 @@ class Interface:
         actions = [
             ["Track", self.track_point, [name, ra, dec]],
         ]
-        if favorite:
-            actions.append(["Unfavorite", None, [pk, favorite]])
-        else:
-            actions.append(["Favorite", None, [pk, favorite]])
+
+        # if favorite:
+        #     actions.append(["Unfavorite", None, [pk, favorite]])
+        # else:
+        #     actions.append(["Favorite", None, [pk, favorite]])
 
         return self.choose_from_list(name, actions, True)
 
@@ -681,13 +682,19 @@ class Interface:
         actions = [
             ["Track", self.track_point, [name, ra, dec]],
         ]
-        if favorite:
-            actions.append(["Unfavorite", None, [pk, favorite]])
-        else:
-            actions.append(["Favorite", None, [pk, favorite]])
+        # if favorite:
+        #     actions.append(["Unfavorite", None, [pk, favorite]])
+        # else:
+        #     actions.append(["Favorite", None, [pk, favorite]])
 
         return self.choose_from_list(name, actions, True)
 
+    def display_planet(self, pk, favorite, name, key):
+        actions = [
+            ["Track", self.track_planet, [name, key]],
+        ]
+
+        return self.choose_from_list(name, actions, True)
 
     def settings(self):
         actions = [
@@ -760,6 +767,47 @@ class Interface:
                 if released and self.select_pressed() or self.left_pressed():
                     break
 
+
+                if c % 50 == 0:
+                    self.__lcd.lcd_display_string(name.center(20), 1)
+                    self.__lcd.lcd_display_string(f"AL: {DMS(angle=alt.degrees)}", 2)
+                    self.__lcd.lcd_display_string(f"AZ: {DMS(angle=az.degrees, limit=360)}", 3)
+                    self.__lcd.lcd_display_string("SELECT to stop".center(20), 4)
+
+                c += 1
+        except ValueError as e:
+            self.__mount.stop()
+            self.lcd_three_line_message("Error: Target is currently inaccessible.")
+        finally:
+            self.__mount.stop()
+
+        self.__mount.stop()
+
+    def track_planet(self, name, key):
+        self.__lcd.lcd_clear()
+        # Right ascension specified in degrees... convert to hours.
+        p = self.__planets[key]
+
+        c = 0
+
+        released = not self.select_pressed()
+
+        try:
+            while True:
+                t = self.__timescale.now()
+                apparent = self.__location.at(t).observe(p).apparent()
+                alt, az, dist = apparent.altaz()
+
+                self.__mount.set_setpoint(alt.degrees, az.degrees)
+                self.__mount.go_to_setpoint()
+
+                print("AL", alt.degrees, "AZ", az.degrees)
+
+                if not self.select_pressed():
+                    released = True
+
+                if released and self.select_pressed() or self.left_pressed():
+                    break
 
                 if c % 50 == 0:
                     self.__lcd.lcd_display_string(name.center(20), 1)
