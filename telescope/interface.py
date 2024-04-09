@@ -13,6 +13,8 @@ from typing import Any, Optional, Union, Tuple, List, Callable
 from adafruit_seesaw import seesaw, digitalio, rotaryio
 from datetime import datetime, timezone
 import magnetismi.magnetismi as magnetic_api
+import subprocess
+import os
 
 from skyfield.api import Loader, wgs84, Star
 
@@ -86,7 +88,9 @@ class Interface:
     def setup(self):
         print("Setup started.")
 
-
+        if os.geteuid() != 0:
+            print("Root access required!")
+            self.error("You need root!")
 
         self.level_altitude()
 
@@ -116,6 +120,13 @@ class Interface:
         while utc_time is None or not self.yes_or_no(f"Time found: {utc_time.isoformat()[:-3]} Use?"):
             utc_time = self.specify_utc_time()
 
+        try:
+            subprocess.check_call(["sudo", "date", "-s", "--date='@{:}'".format(utc_time.timestamp())])
+        except subprocess.CalledProcessError as e:
+            print("Failed to set time")
+            self.__mount.stop()
+            self.error("Failed to set time")
+
         gps_coords = self.get_gps_coords()
         if gps_coords is None:
             gps_coords = self.specify_coordinates()
@@ -137,7 +148,7 @@ class Interface:
 
         model = magnetic_api.Model(utc_time.year)
         date = magnetic_api.dti.date(utc_time.year, utc_time.month, utc_time.day)
-        point = model.at(lat_dd=self.__latitude_degrees, lon_dd=self.__longitude_degrees, alt_ft=gps_coords[2] * consts.METERS_TO_FEET)
+        point = model.at(lat_dd=self.__latitude_degrees, lon_dd=self.__longitude_degrees, alt_ft=gps_coords[2] * consts.METERS_TO_FEET, date=date)
         mag_declination = point.dec
 
         use_calculated_declination = self.yes_or_no(f"Magnetic dec. found: {mag_declination:.2f}{chr(223)}. Use?")
