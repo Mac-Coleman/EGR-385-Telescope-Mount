@@ -743,30 +743,36 @@ class Interface:
 
         released = not self.select_pressed()
 
-        while True:
-            t = self.__timescale.now()
-            apparent = self.__location.at(t).observe(s).apparent()
-            alt, az, dist = apparent.altaz()
+        try:
+            while True:
+                t = self.__timescale.now()
+                apparent = self.__location.at(t).observe(s).apparent()
+                alt, az, dist = apparent.altaz()
 
-            self.__mount.set_setpoint(alt.degrees, az.degrees)
-            self.__mount.go_to_setpoint()
+                self.__mount.set_setpoint(alt.degrees, az.degrees)
+                self.__mount.go_to_setpoint()
 
-            print("AL", alt.degrees, "AZ", az.degrees)
+                print("AL", alt.degrees, "AZ", az.degrees)
 
-            if not self.select_pressed():
-                released = True
+                if not self.select_pressed():
+                    released = True
 
-            if released and self.select_pressed() or self.left_pressed():
-                break
+                if released and self.select_pressed() or self.left_pressed():
+                    break
 
 
-            if c % 50 == 0:
-                self.__lcd.lcd_display_string(name.center(20), 1)
-                self.__lcd.lcd_display_string(f"AL: {DMS(angle=alt.degrees)}", 2)
-                self.__lcd.lcd_display_string(f"AZ: {DMS(angle=az.degrees, limit=360)}", 3)
-                self.__lcd.lcd_display_string("SELECT to stop".center(20), 4)
+                if c % 50 == 0:
+                    self.__lcd.lcd_display_string(name.center(20), 1)
+                    self.__lcd.lcd_display_string(f"AL: {DMS(angle=alt.degrees)}", 2)
+                    self.__lcd.lcd_display_string(f"AZ: {DMS(angle=az.degrees, limit=360)}", 3)
+                    self.__lcd.lcd_display_string("SELECT to stop".center(20), 4)
 
-            c += 1
+                c += 1
+        except ValueError as e:
+            self.__mount.stop()
+            self.lcd_three_line_message("Error: Target is currently inaccessible.")
+        finally:
+            self.__mount.stop()
 
         self.__mount.stop()
 
