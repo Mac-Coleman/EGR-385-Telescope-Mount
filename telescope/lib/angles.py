@@ -12,26 +12,34 @@ class DMS:
                 self.sign = 1
             else:
                 self.sign = -1
-            self.deg = round(abs(signed_angle))
-            m = (signed_angle % 1) * 60 # This feels sketchy
-            self.min = round(m)
-            s = ((m * 100) % 1) * 60 # This feels even sketchier
-            self.sec = s
+            self.deg = int(abs(signed_angle))
+            decimal_minutes = (signed_angle % 1) * 60  # This feels sketchy
+            self.min = int(decimal_minutes)
+            decimal_seconds = (decimal_minutes % 1) * 60  # This feels even sketchier
+            self.sec = decimal_seconds
 
     def __format__(self, spec):
         return "{}{} {:02}' {:04.1f}\"".format(str(self.sign * self.deg).rjust(4), chr(223), self.min, self.sec)
 
     def __str__(self):
-       return "{}{} {:02}' {:04.1f}\"".format(str(self.sign * self.deg).rjust(4), chr(223), self.min, self.sec)
+        return "{}{} {:02}' {:04.1f}\"".format(str(self.sign * self.deg).rjust(4), chr(223), self.min, self.sec)
+
+    def deg(self) -> float:
+        return self.deg + self.min / 60 + self.sec / (60 * 60)
+
 
 class HMS:
-    def __init__(self, angle):
-        signed_angle = angle/360 * 24
-        self.hours = round(signed_angle)
-        m = (signed_angle % 1) * 60
-        self.min = round(m)
-        s = ((m * 100) % 1) * 60
-        self.sec = s
+    def __init__(self, angle=None, h: int = 0, m: int = 0, s: int = 0.0):
+        self.hours = abs(h)
+        self.min = abs(m)
+        self.sec = abs(s)
+        if angle is not None:
+            decimal_hours = angle/360 * 24
+            self.hours = int(decimal_hours)
+            decimal_minutes = (decimal_hours % 1) * 60
+            self.min = int(decimal_minutes)
+            decimal_seconds = (decimal_minutes % 1) * 60
+            self.sec = decimal_seconds
 
     def __format__(self, spec):
         return "{}h {:02}m {:04.1f}s".format(str(self.hours).rjust(4), self.min, self.sec)
@@ -39,3 +47,8 @@ class HMS:
     def __str__(self):
         return "{}h {:02}m {:04.1f}s".format(str(self.hours).rjust(4), self.min, self.sec)
 
+    def hours(self):
+        return self.hours + self.min/60 + self.sec/(60 * 60)
+
+    def deg(self) -> float:
+        return (self.hours/24 * 360) + (self.min/60 * 15) + (self.sec/(60 * 60) * 15)

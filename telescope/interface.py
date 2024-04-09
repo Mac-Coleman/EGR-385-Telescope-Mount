@@ -440,13 +440,30 @@ class Interface:
             ["Seconds", int(default_dms.sec), self.int_selection, ["Choose seconds...", int(default_dms.sec), 0, 59]]
         ]
 
-        keys = self.list_selection("Choose angle...", default, 7)
+        keys = self.list_selection(title, default, 7)
         dms = None
         try:
             dms = DMS(d=keys["Degrees"], m=keys["Minutes"], s=keys["Seconds"])
         except ValueError as e:
             self.lcd_three_line_message("Error: invalid angle")
         return dms
+
+    def hms_selection(self, title, default_hms: HMS):
+        width = 23
+
+        default = [
+            ["Hours", default_hms.hours, self.int_selection, ["Choose hours...", default_hms.hours, 0, width]],
+            ["Minutes", default_hms.min, self.int_selection, ["Choose minutes...", default_hms.sec, 0, 59]],
+            ["Seconds", default_hms.sec, self.int_selection, ["Choose seconds...", int(default_hms.sec), 0, 59]],
+        ]
+
+        keys = self.list_selection(title, default, 7)
+        hms = None
+        try:
+            hms = HMS(h=keys["Hours"], m=keys["Minutes"], s=keys["Seconds"])
+        except ValueError as e:
+            self.lcd_three_line_message("Error: invalid angle")
+        return hms
 
     def level_altitude(self):
         self.__lcd.lcd_clear()
@@ -597,12 +614,29 @@ class Interface:
         actions = [
             ["Objects", self.all_objects, [False]],
             # ["Favorites", self.all_objects, [True]],
-            ["Coordinates", None, []],
+            ["Coordinates", self.select_celestial_coordinate, []],
             ["Manual", self.manual, []],
             # ["Settings", self.settings, []]
         ]
 
         return self.choose_from_list("Choose Action", actions, False)
+
+    def select_celestial_coordinate(self):
+
+        d_r = HMS()
+        d_d = DMS()
+
+        options = [
+            ["RA", d_r, self.hms_selection, ["Choose RA", d_r]],
+            ["DE", d_d, self.dms_selection, ["Choose DE", d_d, True]]
+        ]
+
+        keys = self.list_selection("Choose coordinate...", options, 2)
+
+        ra = keys["RA"]
+        de = keys["DE"]
+
+        self.track_point("Coordinate", ra.hours(), de.deg())
 
     def all_objects(self, favorites_only):
         actions = [
