@@ -636,7 +636,7 @@ class Interface:
         ra = keys["RA"]
         de = keys["DE"]
 
-        self.track_point("Coordinate", ra.hours(), de.deg())
+        self.track_point("Coordinate", ra.dec_hours(), de.dec_deg())
 
     def all_objects(self, favorites_only):
         actions = [

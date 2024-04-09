@@ -24,7 +24,7 @@ class DMS:
     def __str__(self):
         return "{}{} {:02}' {:04.1f}\"".format(str(self.sign * self.deg).rjust(4), chr(223), self.min, self.sec)
 
-    def deg(self) -> float:
+    def dec_deg(self) -> float:
         return self.deg + self.min / 60 + self.sec / (60 * 60)
 
 
@@ -47,8 +47,8 @@ class HMS:
     def __str__(self):
         return "{}h {:02}m {:04.1f}s".format(str(self.hours).rjust(4), self.min, self.sec)
 
-    def hours(self):
+    def dec_hours(self):
         return self.hours + self.min/60 + self.sec/(60 * 60)
 
-    def deg(self) -> float:
+    def dec_deg(self) -> float:
         return (self.hours/24 * 360) + (self.min/60 * 15) + (self.sec/(60 * 60) * 15)
