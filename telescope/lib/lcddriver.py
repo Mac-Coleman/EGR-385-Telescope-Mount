@@ -113,7 +113,7 @@ class lcd:
       if line == 4:
          self.lcd_write(0xD4)
 
-      string = string.ljust(20)
+      string = string.ljust(20)[:20]
 
       if self.cached[line-1] == string:
          return
