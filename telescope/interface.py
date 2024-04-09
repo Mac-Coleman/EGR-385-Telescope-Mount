@@ -121,7 +121,7 @@ class Interface:
             utc_time = self.specify_utc_time()
 
         try:
-            subprocess.check_call(["sudo", "date", "-s", "--date='@{:}'".format(utc_time.timestamp())])
+            subprocess.check_call(["sudo", "date", "-s", "'@{}'".format(int(utc_time.timestamp()))])
         except subprocess.CalledProcessError as e:
             print("Failed to set time")
             self.__mount.stop()
