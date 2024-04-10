@@ -8,7 +8,10 @@ sudo -H python3 -m pip install -e .
 sudo cp -v ./bin/telescope.service /lib/systemd/system/
 sudo systemctl enable telescope.service
 cd telescope
-python3 setup_database.py
+sudo python3 setup_database.py
+sudo raspi-config nonint do_i2c 0
+sudo raspi-config nonint do_serial_hw 0
+sudo raspi-config nonint do_serial_cons 1
 echo "enable_uart=1" | sudo tee -a /boot/config.txt
 echo "dtoverlay=pwm-2chan" | sudo tee -a /boot/config.txt
 echo "dtparam=i2c_arm_baudrate=400000" | sudo tee -a /boot/config.txt
